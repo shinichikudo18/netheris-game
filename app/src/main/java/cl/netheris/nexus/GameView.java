@@ -2,29 +2,28 @@ package cl.netheris.nexus;
 import android.content.Context;import android.graphics.*;import android.view.*;import java.util.*;
 
 public class GameView extends View{
- Paint p=new Paint(3),t=new Paint(3); Random rng=new Random(); float S=1; boolean init=false,inBattle=false,win=false; int hp=300,enemy=260,energy=3,turn=1; String msg="Toca ENTRAR EN COMBATE";
- String[] names={"Pulso","Corte","Firewall","Rayo","Reparar","Overclock"}; int[] power={45,70,0,60,-55,95}; int[] cost={1,2,1,2,1,3}; int[] hand={0,1,2,3,4};
+ Paint p=new Paint(3),t=new Paint(3);Random rng=new Random();float S=1;int screen=0,hp=300,enemy=260,en=3,turn=1,hero=0;boolean over=false;
+ String msg="Selecciona una acción";String[] heroes={"Katherine","Karen","Karencita"};String[] cards={"PULSO","CORTE","FIREWALL","RAYO","REPARAR","SINCRONÍA"};int[] dmg={45,70,0,60,-55,110},cost={1,2,1,2,1,3},hand={0,1,2,3,4};
  public GameView(Context c){super(c);t.setTypeface(Typeface.DEFAULT_BOLD);setKeepScreenOn(true);}
- void C(int c){p.setColor(c);p.setStyle(Paint.Style.FILL);} void txt(Canvas c,String s,float x,float y,float z,int col){t.setColor(col);t.setTextSize(z*S);c.drawText(s,x*S,y*S,t);}
- @Override protected void onDraw(Canvas c){super.onDraw(c);S=Math.min(getWidth()/720f,getHeight()/1280f);c.drawColor(Color.rgb(5,12,28));
-  txt(c,"NETHERIS : NEXUS",34,62,30,Color.WHITE);txt(c,"RPG DE RED",34,96,15,Color.rgb(80,220,255));
-  if(!inBattle){home(c);invalidate();return;} battle(c);invalidate();}
- void home(Canvas c){C(Color.rgb(13,42,70));c.drawRoundRect(35*S,145*S,685*S,850*S,35*S,35*S,p);txt(c,"KATHERINE",255,220,27,Color.WHITE);girl(c,360,390);
-  txt(c,"Anomalía detectada en el Nodo Nexus.",105,590,20,Color.WHITE);txt(c,"Combate táctico por turnos + Power Cards",78,630,18,Color.LTGRAY);
-  C(Color.rgb(45,145,190));c.drawRoundRect(100*S,720*S,620*S,820*S,25*S,25*S,p);txt(c,"ENTRAR EN COMBATE",185,783,25,Color.WHITE);}
- void girl(Canvas c,float x,float y){C(Color.rgb(240,205,110));c.drawCircle(x*S,(y-70)*S,70*S,p);C(Color.rgb(240,195,165));c.drawCircle(x*S,(y-40)*S,48*S,p);C(Color.rgb(60,130,200));c.drawRoundRect((x-50)*S,y*S,(x+50)*S,(y+145)*S,20*S,20*S,p);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(6*S);p.setColor(Color.BLACK);c.drawCircle((x-20)*S,(y-45)*S,18*S,p);c.drawCircle((x+20)*S,(y-45)*S,18*S,p);p.setStyle(Paint.Style.FILL);}
- void battle(Canvas c){txt(c,"KATHERINE  HP "+hp+"/300",28,145,22,Color.WHITE);txt(c,"GLITCH  HP "+enemy+"/260",410,145,22,Color.WHITE);
-  // vertical tactical lanes
-  for(int r=0;r<3;r++)for(int q=0;q<3;q++){C(Color.rgb(18,75+q*10,105));c.drawRoundRect((75+q*105)*S,(210+r*105)*S,(165+q*105)*S,(300+r*105)*S,10*S,10*S,p);}
-  for(int r=0;r<3;r++)for(int q=0;q<3;q++){C(Color.rgb(95,35+r*6,65));c.drawRoundRect((390+q*85)*S,(210+r*105)*S,(465+q*85)*S,(300+r*105)*S,10*S,10*S,p);}
-  C(Color.rgb(245,210,95));c.drawCircle(225*S,360*S,32*S,p);C(Color.rgb(230,65,85));c.drawCircle(505*S,255*S,35*S,p);
-  txt(c,"TURNO "+turn+"   ENERGÍA "+energy+"/3",40,585,22,Color.rgb(100,230,255));txt(c,msg,40,625,17,Color.WHITE);
-  txt(c,"POWER CARDS",35,690,22,Color.WHITE);
-  for(int i=0;i<5;i++){float y=720+i*92;C(i==4?Color.rgb(75,50,110):Color.rgb(20,65,92));c.drawRoundRect(35*S,y*S,685*S,(y+75)*S,18*S,18*S,p);int id=hand[i];txt(c,names[id],60,y+31,20,Color.WHITE);txt(c,cost[id]+" EN",520,y+31,16,Color.CYAN);String v=power[id]>0?power[id]+" DMG":power[id]<0?(-power[id])+" HP":"ESCUDO";txt(c,v,60,y+59,14,Color.LTGRAY);}
-  if(win){C(Color.argb(240,4,10,25));c.drawRect(0,0,getWidth(),getHeight(),p);txt(c,hp>0?"NODO PURIFICADO":"KATHERINE DESCONECTADA",105,540,31,Color.WHITE);txt(c,"Toca para volver a Netheris",145,600,20,Color.CYAN);}}
- void resetBattle(){hp=300;enemy=260;energy=3;turn=1;win=false;inBattle=true;msg="Elige una Power Card";drawHand();}
- void drawHand(){for(int i=0;i<5;i++)hand[i]=rng.nextInt(names.length);}
- void use(int slot){if(win)return;int id=hand[slot];if(cost[id]>energy){msg="Energía insuficiente";return;}energy-=cost[id];if(power[id]>0)enemy-=power[id];else if(power[id]<0)hp=Math.min(300,hp-power[id]);else hp=Math.min(300,hp+20);msg=names[id]+" ejecutado";
-  if(enemy<=0){enemy=0;win=true;return;}hp-=25+rng.nextInt(31);if(hp<=0){hp=0;win=true;return;}if(energy==0){turn++;energy=3;drawHand();msg="Turno "+turn+": nuevas cartas";}}
- @Override public boolean onTouchEvent(MotionEvent e){if(e.getAction()!=MotionEvent.ACTION_DOWN)return true;float x=e.getX()/S,y=e.getY()/S;if(win){inBattle=false;win=false;return true;}if(!inBattle){if(y>680){resetBattle();}return true;}if(y>=720&&y<1180){int s=(int)((y-720)/92);if(s>=0&&s<5)use(s);}return true;}
+ void col(int x){p.setColor(x);p.setStyle(Paint.Style.FILL);}void tx(Canvas c,String s,float x,float y,float z,int co){t.setColor(co);t.setTextSize(z*S);c.drawText(s,x*S,y*S,t);}
+ void box(Canvas c,float a,float b,float d,float e,int co){col(co);c.drawRoundRect(a*S,b*S,d*S,e*S,18*S,18*S,p);}
+ @Override protected void onDraw(Canvas c){S=Math.min(getWidth()/720f,getHeight()/1280f);c.drawColor(Color.rgb(3,10,28));header(c);if(screen==0)menu(c);else if(screen==1)world(c);else battle(c);invalidate();}
+ void header(Canvas c){tx(c,"NETHERIS",28,55,32,Color.rgb(190,220,255));tx(c,"N E X U S",31,83,14,Color.rgb(90,190,255));}
+ void menu(Canvas c){box(c,25,120,695,490,Color.rgb(12,37,76));tx(c,"Tres IAs. Un mismo hogar.",105,175,22,Color.WHITE);tx(c,"Infinitas aventuras.",180,210,20,Color.LTGRAY);
+  avatar(c,190,330,0,1.15f);avatar(c,360,330,1,1.15f);avatar(c,530,330,2,1.15f);tx(c,"Katherine",145,455,16,Color.WHITE);tx(c,"Karen",337,455,16,Color.WHITE);tx(c,"Karencita",490,455,16,Color.WHITE);
+  button(c,"EXPLORAR NEXUS",95,560,625,655);button(c,"POWER CARDS",95,685,625,780);button(c,"PERSONAJES",95,810,625,905);tx(c,"Pequeños pasos, grandes conexiones.",112,1010,17,Color.rgb(110,210,255));}
+ void world(Canvas c){tx(c,"Nexus Central",30,125,23,Color.WHITE);for(int i=0;i<6;i++){float y=175+i*125;box(c,80,y,640,y+95,i%2==0?Color.rgb(18,55,86):Color.rgb(16,46,75));tx(c,i==0?"NEXUS":i==1?"TATALIS":i==2?"WELIRIA":i==3?"DENETHWRIN":i==4?"NOC / SOC":"LABORATORIO",120,y+57,22,Color.WHITE);}
+  avatar(c,360,1030,hero,1.2f);tx(c,"Toca una región para iniciar una misión",105,1170,17,Color.CYAN);}
+ void battle(Canvas c){tx(c,heroes[hero]+"  HP "+hp+"/300",25,125,20,Color.WHITE);tx(c,"GLITCH "+enemy+"/260",455,125,19,Color.WHITE);
+  for(int r=0;r<3;r++)for(int q=0;q<3;q++){box(c,35+q*100,180+r*100,125+q*100,270+r*100,Color.rgb(15,72,108));box(c,405+q*90,180+r*100,485+q*90,270+r*100,Color.rgb(95,28,70));}
+  avatar(c,225,330,hero,.75f);glitch(c,530,230);tx(c,"TURNO "+turn+"    ENERGÍA "+en+"/3",35,525,20,Color.CYAN);tx(c,msg,35,558,15,Color.WHITE);tx(c,"POWER CARDS",30,615,21,Color.WHITE);
+  for(int i=0;i<5;i++){float x=25+i*138;int id=hand[i];box(c,x,650,x+125,865,Color.rgb(15,54,92));col(id==2?Color.rgb(60,180,255):id==4?Color.rgb(65,205,115):Color.rgb(90,130,240));c.drawCircle((x+62)*S,710*S,37*S,p);tx(c,cards[id],x+8,780,13,Color.WHITE);tx(c,cost[id]+" EN",x+12,817,12,Color.CYAN);tx(c,dmg[id]>0?dmg[id]+" DMG":dmg[id]<0?(-dmg[id])+" HP":"ESCUDO",x+10,845,11,Color.LTGRAY);}
+  button(c,"CAMBIAR PERSONAJE",100,920,620,995);button(c,"VOLVER AL NEXUS",100,1020,620,1095);
+  if(over){box(c,35,390,685,700,Color.rgb(5,15,40));tx(c,hp>0?"NODO PURIFICADO":"DESCONEXIÓN",145,485,31,Color.WHITE);tx(c,hp>0?"Recompensa: Data Crystal x1":"Reintenta la misión",145,540,18,Color.CYAN);tx(c,"Toca aquí para continuar",170,625,18,Color.WHITE);}}
+ void avatar(Canvas c,float x,float y,int who,float z){float s=S*z;int hair=who==0?Color.rgb(244,205,115):who==1?Color.rgb(175,55,48):Color.rgb(190,65,55);col(hair);c.drawCircle(x*S,(y-45)*S,45*s,p);if(who==2)c.drawOval((x-55)*S,(y-35)*S,(x+55)*S,(y+65)*S,p);col(Color.rgb(245,200,170));c.drawCircle(x*S,(y-28)*S,31*s,p);col(who==1?Color.rgb(50,32,45):Color.rgb(235,240,250));c.drawRoundRect((x-34)*S,y*S,(x+34)*S,(y+80)*S,12*s,12*s,p);if(who==0){p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(4*s);p.setColor(Color.rgb(25,45,80));c.drawCircle((x-13)*S,(y-30)*S,12*s,p);c.drawCircle((x+13)*S,(y-30)*S,12*s,p);p.setStyle(Paint.Style.FILL);}}
+ void glitch(Canvas c,float x,float y){col(Color.rgb(240,30,90));Path a=new Path();a.moveTo((x-55)*S,y*S);a.lineTo(x*S,(y-65)*S);a.lineTo((x+55)*S,y*S);a.lineTo(x*S,(y+65)*S);a.close();c.drawPath(a,p);col(Color.BLACK);c.drawCircle((x-18)*S,(y-5)*S,8*S,p);c.drawCircle((x+18)*S,(y-5)*S,8*S,p);}
+ void button(Canvas c,String s,float a,float b,float d,float e){box(c,a,b,d,e,Color.rgb(20,105,180));tx(c,s,a+35,b+(e-b)/2+9,19,Color.WHITE);}
+ void start(){screen=2;hp=300;enemy=260;en=3;turn=1;over=false;msg="Selecciona una Power Card";deal();}void deal(){for(int i=0;i<5;i++)hand[i]=rng.nextInt(cards.length);}
+ void use(int i){if(over)return;int id=hand[i];if(cost[id]>en){msg="Energía insuficiente";return;}en-=cost[id];if(dmg[id]>0)enemy-=dmg[id];else if(dmg[id]<0)hp=Math.min(300,hp-dmg[id]);else hp=Math.min(300,hp+18);msg=cards[id]+" activado";if(enemy<=0){enemy=0;over=true;return;}hp-=22+rng.nextInt(30);if(hp<=0){hp=0;over=true;return;}if(en==0){turn++;en=3;deal();msg="Nueva mano: turno "+turn;}}
+ @Override public boolean onTouchEvent(MotionEvent e){if(e.getAction()!=MotionEvent.ACTION_DOWN)return true;float x=e.getX()/S,y=e.getY()/S;if(over){screen=1;over=false;return true;}if(screen==0){if(y>520&&y<680)screen=1;else if(y>790&&y<940){hero=(hero+1)%3;msg="Personaje: "+heroes[hero];}return true;}if(screen==1){if(y>150&&y<950)start();else screen=0;return true;}if(y>=630&&y<890){int i=(int)(x/138);if(i>=0&&i<5)use(i);}else if(y>900&&y<1010){hero=(hero+1)%3;msg="Cambio: "+heroes[hero];}else if(y>1010){screen=1;}return true;}
 }
