@@ -3,129 +3,200 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Netheris World UI · Fase 1</title>
+  <meta name="theme-color" content="#080b15" />
+  <title>Netheris World UI · El Hogar</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <main class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow">NETHERIS · WORLD UI</p>
-        <h1>El Hogar</h1>
+    <header class="world-bar">
+      <div class="brand">
+        <span class="brand-mark">◇</span>
+        <div>
+          <p class="eyebrow">NETHERIS · WORLD UI</p>
+          <h1>El Hogar</h1>
+        </div>
       </div>
-      <div class="world-status">
-        <span class="pulse"></span>
-        <span>Simulación local · PET sprites</span>
+
+      <div class="world-actions">
+        <div class="world-status">
+          <span class="pulse"></span>
+          <span>Local</span>
+          <span class="separator">·</span>
+          <span>PET sprites</span>
+        </div>
+        <button id="toggle-lab" class="icon-button" type="button" aria-expanded="false" aria-controls="lab-panel" title="Abrir laboratorio de simulación">
+          <span>⚗</span>
+          <span class="button-label">Simulación</span>
+        </button>
       </div>
     </header>
 
-    <section class="layout">
-      <section class="world-panel">
-        <div id="world" class="world" aria-label="Escena principal de Netheris">
-          <div class="ambient ambient-a"></div>
-          <div class="ambient ambient-b"></div>
+    <section class="world-shell">
+      <div id="world" class="world" aria-label="El Hogar de Netheris">
+        <div class="sky-glow"></div>
+        <div class="back-wall"></div>
+        <div class="panorama">
+          <span class="star star-a"></span>
+          <span class="star star-b"></span>
+          <span class="star star-c"></span>
+          <div class="horizon-line"></div>
+          <div class="distant-node node-a"></div>
+          <div class="distant-node node-b"></div>
+          <div class="distant-node node-c"></div>
+        </div>
 
-          <div class="station station-board" data-station="board">
-            <span class="station-icon">◫</span>
+        <div class="room-floor">
+          <div class="floor-grid"></div>
+          <div class="floor-ring floor-ring-a"></div>
+          <div class="floor-ring floor-ring-b"></div>
+          <div id="route-trail" class="route-trail"></div>
+        </div>
+
+        <div class="decor planter planter-left"><span></span><i></i><b></b></div>
+        <div class="decor planter planter-right"><span></span><i></i><b></b></div>
+
+        <button class="world-object station station-board" data-station="board" type="button">
+          <span class="object-glow"></span>
+          <span class="holo-screen">
+            <i></i><i></i><i></i>
+          </span>
+          <span class="object-copy">
             <strong>Tablero de Katherine</strong>
-            <small>Coordinación · memoria · planificación</small>
-          </div>
+            <small>Memoria · coordinación</small>
+          </span>
+        </button>
 
-          <div class="station station-research" data-station="research">
-            <span class="station-icon">⌨</span>
+        <button class="world-object station station-research" data-station="research" type="button">
+          <span class="object-glow"></span>
+          <span class="desk">
+            <i class="monitor monitor-a"></i>
+            <i class="monitor monitor-b"></i>
+            <i class="desk-base"></i>
+          </span>
+          <span class="object-copy">
             <strong>Estación de Karen</strong>
-            <small>Investigación · código · análisis</small>
-          </div>
+            <small>Research · código</small>
+          </span>
+        </button>
 
-          <div class="station station-home" data-station="home-console">
-            <span class="station-icon">⌂</span>
+        <button class="world-object station station-home" data-station="homeConsole" type="button">
+          <span class="object-glow"></span>
+          <span class="home-console">
+            <i class="home-screen"></i>
+            <i class="home-core">⌂</i>
+          </span>
+          <span class="object-copy">
             <strong>Consola de Karencita</strong>
             <small>Casa · rutinas · IoT</small>
-          </div>
+          </span>
+        </button>
 
-          <div class="station station-core" data-station="core">
-            <span class="station-icon">◇</span>
+        <button class="world-object portal station-portal" data-station="portal" type="button">
+          <span class="portal-ring ring-1"></span>
+          <span class="portal-ring ring-2"></span>
+          <span class="portal-core">◎</span>
+          <span class="object-copy">
+            <strong>Mundo físico</strong>
+            <small>Manifestaciones</small>
+          </span>
+        </button>
+
+        <button class="world-object core-gate station-core" data-station="core" type="button">
+          <span class="core-crystal">◇</span>
+          <span class="core-base"></span>
+          <span class="object-copy">
             <strong>Core Netheris</strong>
-            <small>Puente lógico del mundo</small>
-          </div>
+            <small>Puente lógico</small>
+          </span>
+        </button>
 
-          <div class="station station-portal" data-station="portal">
-            <span class="station-icon">◎</span>
-            <strong>Enlace al mundo físico</strong>
-            <small>PC · móvil · voz · futuros dispositivos</small>
-          </div>
-
-          <div class="station station-table" data-station="table">
-            <span class="station-icon">△</span>
+        <button class="world-object common-table station-table" data-station="table" type="button">
+          <span class="table-top"></span>
+          <span class="table-energy"></span>
+          <span class="object-copy">
             <strong>Mesa común</strong>
-            <small>Encuentro entre las tres</small>
+            <small>Punto de encuentro</small>
+          </span>
+        </button>
+
+        <article id="agent-katherine" class="agent katherine" data-agent="katherine" tabindex="0" aria-label="Katherine">
+          <div class="agent-bubble"><span>Libre</span></div>
+          <div class="avatar">
+            <img class="pet-sprite" src="./assets/pets/katherine/frame_001.png" alt="Katherine">
+            <span class="avatar-fallback">K</span>
           </div>
+          <div class="agent-name"><strong>Katherine</strong><span>Coordinación</span></div>
+        </article>
 
-          <article id="agent-katherine" class="agent katherine" data-agent="katherine">
-            <div class="avatar">
-              <img class="pet-sprite" src="./assets/pets/katherine/frame_001.png" alt="Katherine">
-              <span class="avatar-fallback">K</span>
-            </div>
-            <div class="agent-label"><strong>Katherine</strong><span>Libre</span></div>
-          </article>
+        <article id="agent-karen" class="agent karen" data-agent="karen" tabindex="0" aria-label="Karen">
+          <div class="agent-bubble"><span>Libre</span></div>
+          <div class="avatar">
+            <img class="pet-sprite" src="./assets/pets/karen/frame_001.png" alt="Karen">
+            <span class="avatar-fallback">Ka</span>
+          </div>
+          <div class="agent-name"><strong>Karen</strong><span>Research & código</span></div>
+        </article>
 
-          <article id="agent-karen" class="agent karen" data-agent="karen">
-            <div class="avatar">
-              <img class="pet-sprite" src="./assets/pets/karen/frame_001.png" alt="Karen">
-              <span class="avatar-fallback">Ka</span>
-            </div>
-            <div class="agent-label"><strong>Karen</strong><span>Libre</span></div>
-          </article>
+        <article id="agent-karencita" class="agent karencita" data-agent="karencita" tabindex="0" aria-label="Karencita">
+          <div class="agent-bubble"><span>Libre</span></div>
+          <div class="avatar">
+            <img class="pet-sprite" src="./assets/pets/karencita/frame_001.png" alt="Karencita">
+            <span class="avatar-fallback">Ki</span>
+          </div>
+          <div class="agent-name"><strong>Karencita</strong><span>Casa & rutinas</span></div>
+        </article>
 
-          <article id="agent-karencita" class="agent karencita" data-agent="karencita">
-            <div class="avatar">
-              <img class="pet-sprite" src="./assets/pets/karencita/frame_001.png" alt="Karencita">
-              <span class="avatar-fallback">Ki</span>
-            </div>
-            <div class="agent-label"><strong>Karencita</strong><span>Libre</span></div>
-          </article>
-        </div>
-      </section>
-
-      <aside class="sidebar">
-        <section class="card">
-          <div class="card-heading">
+        <aside id="agent-inspector" class="agent-inspector" hidden>
+          <button id="close-inspector" class="close-button" type="button" aria-label="Cerrar">×</button>
+          <p class="eyebrow">PRESENCIA</p>
+          <div class="inspector-head">
+            <span id="inspector-dot" class="inspector-dot"></span>
             <div>
-              <p class="eyebrow">PRESENCIA</p>
-              <h2>Las tres</h2>
+              <h2 id="inspector-name">Katherine</h2>
+              <p id="inspector-role">Coordinación</p>
             </div>
-            <button id="reset-world" class="ghost">Volver al Hogar</button>
           </div>
-          <div id="agent-list" class="agent-list"></div>
-        </section>
+          <dl>
+            <div><dt>Actividad</dt><dd id="inspector-activity">Libre</dd></div>
+            <div><dt>Ubicación</dt><dd id="inspector-target">Hogar</dd></div>
+            <div><dt>Origen</dt><dd id="inspector-source">local-demo</dd></div>
+          </dl>
+        </aside>
 
-        <section class="card simulator">
-          <p class="eyebrow">FASE 1</p>
-          <h2>Simulador de eventos</h2>
-          <p class="muted">
-            Los sprites son reales; las tareas todavía son simuladas. Esto permite definir cómo
-            se ve cada acción antes de conectar Platform Bridge, n8n o Event Bus.
-          </p>
-          <div class="sim-buttons">
-            <button data-demo="katherine">Katherine trabaja</button>
-            <button data-demo="karen">Karen investiga</button>
-            <button data-demo="karencita">Karencita revisa casa</button>
-            <button data-demo="meeting">Reunión de las tres</button>
-            <button data-demo="sleep">Hora de descansar</button>
-            <button data-demo="sequence" class="primary">Secuencia demo</button>
-          </div>
-        </section>
+        <div class="world-legend">
+          <span><i class="legend-dot"></i> Fase 1.1</span>
+          <span>El trabajo aún se simula; los movimientos ya usan PET reales.</span>
+        </div>
+      </div>
+    </section>
 
-        <section class="card event-card">
-          <p class="eyebrow">EVENTO ACTUAL</p>
-          <pre id="event-output">{
+    <section id="lab-panel" class="lab-panel" hidden>
+      <div class="lab-header">
+        <div>
+          <p class="eyebrow">LABORATORIO LOCAL</p>
+          <h2>Eventos de prueba</h2>
+        </div>
+        <button id="reset-world" class="ghost" type="button">Volver al Hogar</button>
+      </div>
+
+      <div class="lab-grid">
+        <div class="sim-buttons">
+          <button data-demo="katherine">Katherine · tablero</button>
+          <button data-demo="karen">Karen · investigar</button>
+          <button data-demo="karencita">Karencita · casa</button>
+          <button data-demo="meeting">Reunión</button>
+          <button data-demo="sleep">Descansar</button>
+          <button data-demo="sequence" class="primary">Secuencia completa</button>
+        </div>
+        <pre id="event-output">{
   "source": "local-demo",
   "status": "ready"
 }</pre>
-        </section>
-      </aside>
+      </div>
     </section>
   </main>
+
   <script src="./app.js"></script>
 </body>
 </html>
