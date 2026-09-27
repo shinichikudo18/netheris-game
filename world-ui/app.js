@@ -119,6 +119,14 @@ const networkSvg = document.querySelector("#path-network");
 
 let selectedAgent = null;
 
+function targetLabel(target) {
+  if (typeof target === "string" && target.startsWith("node:")) {
+    const nodeId = target.slice(5);
+    return NetherisPaths.nodes[nodeId]?.label || nodeId;
+  }
+  return targetLabels[target] || target;
+}
+
 function framePath(agent, frame) {
   return `./assets/pets/${agent}/frame_${String(frame).padStart(3, "0")}.png`;
 }
@@ -171,6 +179,11 @@ function playAnimation(agent, name) {
 }
 
 function resolveTarget(agent, target) {
+  if (typeof target === "string" && target.startsWith("node:")) {
+    const node = NetherisPaths.nodes[target.slice(5)];
+    if (node) return { left: node.x, top: node.y };
+  }
+
   if (target === "Hogar") {
     if (agent === "katherine") return positions.idleKatherine;
     if (agent === "karen") return positions.idleKaren;
@@ -201,17 +214,7 @@ function segmentDuration(from, to) {
 
 function clearAgentPath(agent) {
   if (!networkSvg) return;
-
-  networkSvg.querySelectorAll(`.network-edge.${agent}, .network-node.${agent}`).forEach(node => {
-    node.classList.remove(agent);
-
-    const stillOwned =
-      node.classList.contains("katherine") ||
-      node.classList.contains("karen") ||
-      node.classList.contains("karencita");
-
-    if (!stillOwned) node.classList.remove("active", "current");
-  });
+  NetherisPaths.clearAgentHighlights(networkSvg, agent);
 }
 
 function setVisualState(agent, state) {
@@ -249,6 +252,7 @@ async function moveVisual(agent, event) {
   el.querySelector(".agent-bubble span").textContent = `En ruta · ${event.activity}`;
 
   clearAgentPath(agent);
+  NetherisPaths.previewRoute(networkSvg, route, agent);
   NetherisPaths.highlightNode(networkSvg, fromNodeId, agent, true);
 
   engine.recordPhase(event, "pathing", {
@@ -264,11 +268,10 @@ async function moveVisual(agent, event) {
 
     const previousId = route[index - 1];
     const nextId = route[index];
-    const previous = NetherisPaths.nodes[previousId];
-    const next = NetherisPaths.nodes[nextId];
+    const previous = NetherisPaths.pointForAgent(previousId, agent);
+    const next = NetherisPaths.pointForAgent(nextId, agent);
     if (!previous || !next) continue;
 
-    clearAgentPath(agent);
     NetherisPaths.highlightEdge(networkSvg, previousId, nextId, agent);
     NetherisPaths.highlightNode(networkSvg, previousId, agent);
     NetherisPaths.highlightNode(networkSvg, nextId, agent, true);
@@ -282,6 +285,8 @@ async function moveVisual(agent, event) {
     el.style.left = `${next.x}%`;
     el.style.top = `${next.y}%`;
     el.style.zIndex = String(20 + Math.round(next.y));
+    el.querySelector(".agent-bubble span").textContent =
+      `Ruta ${index}/${route.length - 1} · ${event.activity}`;
 
     visualPositions[agent] = { left: next.x, top: next.y };
     await wait(duration + 34);
@@ -337,6 +342,8 @@ async function moveVisual(agent, event) {
       node: toNodeId,
     },
   });
+
+  engine.armCompletion(agent, event.id, event.duration_ms);
 
   clearTimeout(el.activeTimer);
   el.activeTimer = setTimeout(() => {
@@ -401,17 +408,19 @@ function renderInspector(agent) {
   document.querySelectorAll(".agent.selected").forEach(node => node.classList.remove("selected"));
 
   selectedAgent = agent;
+  networkSvg?.classList.add("agent-selected");
   document.querySelector(`#agent-${agent}`)?.classList.add("selected");
   document.querySelector("#inspector-name").textContent = item.name;
   document.querySelector("#inspector-role").textContent = roles[agent];
   document.querySelector("#inspector-activity").textContent = item.activity;
-  document.querySelector("#inspector-target").textContent = targetLabels[item.target] || item.target;
+  document.querySelector("#inspector-target").textContent = targetLabel(item.target);
   document.querySelector("#inspector-source").textContent = item.source;
   inspector.hidden = false;
 }
 
 function closeInspector() {
   selectedAgent = null;
+  networkSvg?.classList.remove("agent-selected");
   document.querySelector("#agent-inspector").hidden = true;
   document.querySelectorAll(".agent.selected").forEach(node => node.classList.remove("selected"));
 }
@@ -446,7 +455,7 @@ function renderHistory(history) {
           <span class="history-phase">${escapeHtml(item.phase || "event")}</span>
           <time>${escapeHtml(time)}</time>
         </header>
-        <p>${escapeHtml(item.activity || item.type)} · ${escapeHtml(targetLabels[item.target] || item.target || "-")}</p>
+        <p>${escapeHtml(item.activity || item.type)} · ${escapeHtml(targetLabel(item.target) || "-")}</p>
       </article>
     `;
   }).join("");
@@ -462,7 +471,11 @@ function escapeHtml(value) {
 }
 
 function submitEvent(event) {
-  const result = engine.submit(event);
+  const prepared = event?.agent
+    ? { defer_completion: true, ...event }
+    : event;
+
+  const result = engine.submit(prepared);
 
   if (!result.accepted) {
     renderPayload({ status: "invalid", errors: result.errors, event: result.event });
@@ -735,6 +748,42 @@ document.querySelectorAll(".agent").forEach(el => {
   });
 });
 
+function bindNetworkNodeNavigation() {
+  networkSvg?.querySelectorAll(".network-node").forEach(node => {
+    node.addEventListener("click", () => {
+      const nodeId = node.dataset.node;
+      const destination = NetherisPaths.nodes[nodeId];
+      if (!destination) return;
+
+      if (!selectedAgent) {
+        renderPayload({
+          type: "world.node.selected",
+          node: nodeId,
+          label: destination.label,
+          status: "informational",
+          hint: "Selecciona primero a Katherine, Karen o Karencita.",
+        });
+        return;
+      }
+
+      submitEvent({
+        type: "agent.explore.started",
+        agent: selectedAgent,
+        state: "moving",
+        activity: `Explorando ${destination.label}`,
+        target: `node:${nodeId}`,
+        animation: "idle",
+        source: "local-demo",
+        duration_ms: 2200,
+        metadata: {
+          exploration: true,
+          requested_node: nodeId,
+        },
+      });
+    });
+  });
+}
+
 document.querySelectorAll(".world-object").forEach(node => {
   node.addEventListener("click", () => {
     const station = node.dataset.station;
@@ -771,6 +820,7 @@ document.querySelectorAll(".world-object").forEach(node => {
 
 preloadFrames();
 NetherisPaths.render(networkSvg);
+bindNetworkNodeNavigation();
 
 Object.keys(initialState).forEach(agent => {
   const target = resolveTarget(agent, "Hogar");
