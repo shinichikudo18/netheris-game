@@ -154,6 +154,14 @@
       if (!this.paused) AGENTS.forEach(agent => this._drain(agent));
     }
 
+    recordPhase(raw, phase, extra = {}) {
+      const event = this.normalize({ ...raw, ...extra, id: raw.id || extra.id });
+      this._record(event, phase);
+      this.dispatchEvent(new CustomEvent("world:phase", {
+        detail: { ...structuredClone(event), phase }
+      }));
+    }
+
     clearHistory() {
       this.history = [];
       this.dispatchEvent(new CustomEvent("world:history", { detail: [] }));
