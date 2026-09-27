@@ -1,4 +1,4 @@
-# Netheris World UI — Fase 1.1
+# Netheris World UI — Fase 1.2
 
 Prototipo local de la interfaz viva de Netheris.
 
@@ -18,7 +18,13 @@ La vista dejó de tratarse como dashboard y pasa a representar **El Hogar** como
 - laboratorio de simulación ocultable;
 - trayecto luminoso breve cuando una agente se desplaza;
 - sprites direccionales para caminar hacia arriba/abajo;
-- precarga de frames usados para reducir parpadeos.
+- precarga de frames usados para reducir parpadeos;
+- PET visualmente más grandes;
+- zonas de iluminación propias para Katherine, Karen y Karencita;
+- lounge con sofá, alfombra y luz ambiental;
+- hora local del mundo físico en cabecera;
+- estaciones clickeables que disparan su simulación correspondiente;
+- Core y portal utilizables con la agente seleccionada.
 
 La regla continúa intacta: **trabajo real solo podrá representarse cuando exista un evento real**. Todo lo actual sigue identificado como `local-demo`.
 
@@ -26,7 +32,7 @@ La regla continúa intacta: **trabajo real solo podrá representarse cuando exis
 
 Cada personaje usa 50 PNG transparentes de 256×256.
 
-Mapeo provisional Fase 1.1:
+Mapeo provisional Fase 1.2:
 
 - idle: 001–004;
 - caminar hacia cámara: 034–037;
