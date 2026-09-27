@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Netheris World UI · Fase 1</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">NETHERIS · WORLD UI</p>
+        <h1>El Hogar</h1>
+      </div>
+      <div class="world-status">
+        <span class="pulse"></span>
+        <span>Simulación local</span>
+      </div>
+    </header>
+
+    <section class="layout">
+      <section class="world-panel">
+        <div id="world" class="world" aria-label="Escena principal de Netheris">
+          <div class="ambient ambient-a"></div>
+          <div class="ambient ambient-b"></div>
+
+          <div class="station station-board" data-station="board">
+            <span class="station-icon">◫</span>
+            <strong>Tablero de Katherine</strong>
+            <small>Coordinación · memoria · planificación</small>
+          </div>
+
+          <div class="station station-research" data-station="research">
+            <span class="station-icon">⌨</span>
+            <strong>Estación de Karen</strong>
+            <small>Investigación · código · análisis</small>
+          </div>
+
+          <div class="station station-home" data-station="home-console">
+            <span class="station-icon">⌂</span>
+            <strong>Consola de Karencita</strong>
+            <small>Casa · rutinas · IoT</small>
+          </div>
+
+          <div class="station station-core" data-station="core">
+            <span class="station-icon">◇</span>
+            <strong>Core Netheris</strong>
+            <small>Puente lógico del mundo</small>
+          </div>
+
+          <div class="station station-portal" data-station="portal">
+            <span class="station-icon">◎</span>
+            <strong>Enlace al mundo físico</strong>
+            <small>PC · móvil · voz · futuros dispositivos</small>
+          </div>
+
+          <div class="station station-table" data-station="table">
+            <span class="station-icon">△</span>
+            <strong>Mesa común</strong>
+            <small>Encuentro entre las tres</small>
+          </div>
+
+          <article id="agent-katherine" class="agent katherine" data-agent="katherine">
+            <div class="avatar">
+              <img src="./assets/katherine.png" alt="Katherine" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+              <span class="avatar-fallback" hidden>K</span>
+            </div>
+            <div class="agent-label"><strong>Katherine</strong><span>Libre</span></div>
+          </article>
+
+          <article id="agent-karen" class="agent karen" data-agent="karen">
+            <div class="avatar">
+              <img src="./assets/karen.png" alt="Karen" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+              <span class="avatar-fallback" hidden>Ka</span>
+            </div>
+            <div class="agent-label"><strong>Karen</strong><span>Libre</span></div>
+          </article>
+
+          <article id="agent-karencita" class="agent karencita" data-agent="karencita">
+            <div class="avatar">
+              <img src="./assets/karencita.png" alt="Karencita" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+              <span class="avatar-fallback" hidden>Ki</span>
+            </div>
+            <div class="agent-label"><strong>Karencita</strong><span>Libre</span></div>
+          </article>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="card">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">PRESENCIA</p>
+              <h2>Las tres</h2>
+            </div>
+            <button id="reset-world" class="ghost">Volver al Hogar</button>
+          </div>
+
+          <div id="agent-list" class="agent-list"></div>
+        </section>
+
+        <section class="card simulator">
+          <p class="eyebrow">FASE 1</p>
+          <h2>Simulador de eventos</h2>
+          <p class="muted">
+            Todavía no hay conexión con Netheris real. Estos botones sirven para definir cómo se verá
+            cada actividad antes de conectar n8n, Platform Bridge o el futuro Event Bus.
+          </p>
+          <div class="sim-buttons">
+            <button data-demo="katherine">Katherine trabaja</button>
+            <button data-demo="karen">Karen investiga</button>
+            <button data-demo="karencita">Karencita revisa casa</button>
+            <button data-demo="meeting">Reunión de las tres</button>
+            <button data-demo="sequence" class="primary">Secuencia demo</button>
+          </div>
+        </section>
+
+        <section class="card event-card">
+          <p class="eyebrow">EVENTO ACTUAL</p>
+          <pre id="event-output">{
+  "source": "local-demo",
+  "status": "ready"
+}</pre>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
