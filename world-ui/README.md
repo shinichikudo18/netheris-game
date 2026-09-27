@@ -1,110 +1,268 @@
-# Netheris World UI — Fase 2 Alpha / Arcane Realm
+# Netheris World UI — Fase 2.5 Alpha / Cyber Paths
 
-Macro-entrega local de la futura interfaz viva de Netheris.
+Macro-entrega local de la interfaz viva de Netheris.
 
-## Dirección artística cerrada
+## Identidad visual
 
-Netheris se define visualmente como **mundo digital + magia + RPG/anime**.
+Netheris se mantiene como:
 
-No debe verse como:
+**mundo digital + magia + RPG/anime**
 
-- dashboard corporativo;
-- NOC/SOC;
-- oficina futurista convencional;
-- simple habitación con pantallas.
+La Fase 2.5 agrega una segunda regla de diseño:
 
-Debe sentirse como un **reino digital habitable**, donde la infraestructura lógica de Netheris se expresa como magia tecnológica:
+> Las agentes no se teletransportan por la interfaz: recorren Netheris como habitantes de un mundo-juego.
 
-- datos → runas y corrientes de energía;
-- servicios → santuarios, forjas, archivos y cristales;
-- enlaces externos → portales;
-- Core → cristal/núcleo central;
-- reuniones → círculos rituales;
-- eventos → pulsos, caminos luminosos y actividad visible;
-- máquinas reales → lugares/artefactos del mundo.
+La inspiración funcional es el concepto de cyberworld/PET de juegos como MegaMan Battle Network: caminos digitales, nodos, intersecciones y destinos visibles, sin copiar assets, mapas ni arte del juego.
 
-Las imágenes de referencia aportadas por Franco fijan el lenguaje visual: paisajes digitales oscuros azul/violeta, árboles luminosos, cristales, plataformas flotantes, runas, portales, arquitectura fantástica y partículas de energía.
+## Qué agrega Fase 2.5
 
-## Mundo actual
+### Grafo de navegación
 
-La Fase 2 Alpha conserva toda la lógica previa pero rehace la capa visual:
+Nuevo archivo:
 
-- cielo de éter con nebulosas y estrellas;
-- islas y torres flotantes al fondo;
-- plano principal con caminos rúnicos;
-- círculo arcano central;
-- árboles digitales;
-- campos de cristal;
-- Archivo de Katherine;
-- Forja de Karen;
-- Santuario de Karencita;
-- Puerta al Mundo Físico;
-- Núcleo de Netheris;
-- Círculo del Consejo;
-- auras propias de cada agente;
-- PET reales y animados;
-- día/noche según hora local.
+```text
+world-paths.js
+```
+
+El Hogar tiene un grafo navegable con nodos:
+
+```text
+home_katherine
+home_karen
+home_karencita
+
+hub_left
+hub_center
+hub_right
+
+board
+core
+research
+
+south_left
+south_center
+south_right
+
+portal
+table
+homeConsole
+```
+
+Los destinos visuales continúan representando:
+
+- `board` → Archivo de Katherine;
+- `research` → Forja de Karen;
+- `homeConsole` → Santuario de Karencita;
+- `core` → Núcleo de Netheris;
+- `portal` → Puerta al Mundo Físico;
+- `table` → Círculo del Consejo.
+
+### Pathfinding
+
+`world-paths.js` construye el grafo y resuelve rutas entre nodos.
+
+Actualmente utiliza búsqueda en anchura (BFS), suficiente para el mapa pequeño de El Hogar.
+
+Ejemplo conceptual:
+
+```text
+Katherine
+home_katherine
+      ↓
+   hub_left
+      ↓
+    board
+      ↓
+Archivo de Katherine
+```
+
+Otro ejemplo:
+
+```text
+Karen
+home_karen
+    ↓
+hub_center
+    ↓
+ hub_right
+    ↓
+ research
+    ↓
+Forja de Karen
+```
+
+### Movimiento por segmentos
+
+Se reemplazó el desplazamiento visual directo por movimiento paso a paso.
+
+Flujo:
+
+```text
+Evento
+  ↓
+World State Engine
+  ↓
+resolver destino
+  ↓
+calcular path
+  ↓
+departed
+  ↓
+pathing
+  ↓
+nodo → nodo → nodo
+  ↓
+arrived
+  ↓
+interacting
+  ↓
+animación real del PET
+  ↓
+completed
+```
+
+La duración de cada tramo depende de la distancia entre nodos.
+
+### Caminos energéticos
+
+La escena dibuja el grafo como una red de caminos digitales.
+
+Cuando una agente usa una ruta:
+
+- se ilumina el segmento actual;
+- se ilumina el nodo de llegada;
+- el color sigue la identidad visual del personaje;
+- el camino muestra desplazamiento de energía;
+- el PET usa frames de caminar;
+- al llegar aparece un pulso visual;
+- luego comienza su pose/animación de trabajo.
+
+### Estados visuales
+
+Los estados visuales están separados del estado lógico.
+
+Estados visuales actuales:
+
+```text
+pathing
+arriving
+interacting
+idle
+```
+
+Esto permite que un evento lógico:
+
+```json
+{
+  "agent": "karen",
+  "state": "researching",
+  "target": "research"
+}
+```
+
+pase visualmente por:
+
+```text
+pathing
+  ↓
+arriving
+  ↓
+interacting
+```
+
+sin modificar el significado lógico `researching`.
+
+## Historial enriquecido
+
+El World State Engine ahora expone:
+
+```js
+netherisWorld.recordPhase(event, phase, extra)
+```
+
+El Oráculo puede mostrar fases como:
+
+```text
+started
+departed
+pathing
+arrived
+interacting
+completed
+visual-complete
+```
+
+Esto será especialmente útil cuando los eventos provengan de servicios reales.
 
 ## World State Engine
 
-Archivo: `world-state.js`.
+Archivo:
 
-Incluye:
+```text
+world-state.js
+```
 
-- estado independiente por Katherine, Karen y Karencita;
-- estados `idle / moving / working / researching / acting / talking / resting / waiting / error`;
-- cola independiente por agente;
-- actividades simultáneas;
-- duración y finalización;
+Mantiene:
+
+- estado por agente;
+- cola independiente;
+- tareas simultáneas entre agentes;
+- finalización;
+- historial;
 - pausa/reanudación;
-- historial efímero;
-- API local `window.netherisWorld`.
+- validación básica del contrato.
 
-La dirección artística es independiente de este motor: cambiar el escenario no rompe el contrato lógico.
-
-## Contrato JSON
-
-Archivos:
+## Contrato
 
 ```text
 contracts/world-event.schema.json
 contracts/README.md
 ```
 
-Toda integración futura debe producir eventos normalizados.
-
 Regla inalterable:
 
-> Netheris puede tener animación ambiental, pero nunca debe fingir que una agente está trabajando si no existe un evento real que lo respalde.
+> Netheris puede animar el ambiente libremente, pero no representa trabajo real de Katherine, Karen o Karencita sin un evento real que lo respalde.
 
-`source=local-demo` identifica la simulación actual.
+Toda esta fase continúa usando:
 
-## Oráculo de pruebas
+```text
+source=local-demo
+```
 
-El botón **Oráculo** abre el laboratorio local:
+## Cómo probar esta macrofase
 
-- acciones rápidas;
-- cola de Karen;
-- secuencia multiagente;
-- editor JSON;
-- historial;
-- pausa/reanudación;
-- payload normalizado.
+Las mejores pruebas visuales son:
 
-## PET frames
+1. **Katherine · archivo**  
+   Katherine recorre su ruta hasta el Archivo.
 
-Cada personaje usa 50 PNG transparentes de 256×256.
+2. **Karen · investigar**  
+   Karen cruza los nodos del mapa hasta la Forja.
 
-Mapeo provisional:
+3. **Karencita · santuario**  
+   Karencita recorre la ruta sureste.
 
-- idle: 001–004;
-- caminar hacia cámara: 034–037;
-- caminar alejándose: 038–041;
-- trabajo: 019–020;
-- interacción/energía: 043–044;
-- sentada: 042;
-- descanso: 050;
-- espera/error: expresiones provisionales.
+4. **Consejo**  
+   Las tres recorren el mapa simultáneamente hacia el Círculo del Consejo.
+
+5. **Probar cola Karen**  
+   Permite observar cómo varias tareas de una misma agente se procesan una detrás de otra.
+
+6. Seleccionar una agente y hacer clic en:
+   - Núcleo de Netheris;
+   - Puerta al Mundo Físico.
+
+## Archivos principales
+
+```text
+index.html
+styles.css
+app.js
+world-state.js
+world-paths.js
+contracts/
+scripts/import_pet_frames.py
+```
 
 ## Ejecutar
 
@@ -118,18 +276,21 @@ Abrir:
 http://localhost:8080
 ```
 
-## Próxima macro-entrega
+## Próxima macrofase
 
-La conexión real con CT116/Platform Bridge queda deliberadamente después de consolidar esta identidad visual.
+Después de validar visualmente el desplazamiento:
 
-Luego:
+### Fase 3 Alpha — Real Bridge
 
-1. adaptador WebSocket;
-2. detección de sesión/autenticación;
-3. traducción de `typing/investigando`;
-4. reconexión y modo degradado;
-5. distinción visual REAL vs SIMULADO;
-6. adaptadores n8n/Research Bridge/Home Assistant;
-7. Event Bus como fuente principal.
+- adaptador WebSocket para CT116;
+- detección de sesión/autenticación;
+- reconexión automática;
+- modo degradado/offline;
+- traducción de eventos reales `typing` e `investigando`;
+- badge REAL vs SIMULADO;
+- eventos reales moviendo las agentes por este mismo grafo;
+- sin tocar todavía Home Assistant directamente;
+- posteriormente n8n / Research Bridge / HA;
+- Event Bus como arquitectura final.
 
 No reemplazar todavía Netheris-V1.
