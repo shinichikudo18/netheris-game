@@ -1292,6 +1292,14 @@ h3 { font-size: 13px; }
   pointer-events: none;
 }
 
+.network-edge-bed {
+  stroke: rgba(71, 64, 128, .17);
+  stroke-width: 7.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(97, 83, 166, .08));
+}
+
 .network-edge {
   stroke: rgba(117, 107, 214, .14);
   stroke-width: 1.25;
@@ -1302,17 +1310,39 @@ h3 { font-size: 13px; }
 
 .network-edge::before { content: ""; }
 
+.network-edge.planned {
+  stroke-width: 2.3;
+  opacity: .52;
+  stroke-dasharray: 4 8;
+  filter: drop-shadow(0 0 2px currentColor);
+}
+
+.network-edge.planned.katherine { stroke: rgba(110, 232, 255, .75); color: #6ee8ff; }
+.network-edge.planned.karen { stroke: rgba(255, 120, 200, .72); color: #ff78c8; }
+.network-edge.planned.karencita { stroke: rgba(121, 242, 255, .72); color: #79f2ff; }
+
 .network-edge.active {
-  stroke-width: 3.4;
-  opacity: .96;
-  filter: drop-shadow(0 0 4px currentColor);
+  stroke-width: 4.1;
+  opacity: 1;
+  filter: drop-shadow(0 0 5px currentColor);
   stroke-dasharray: 8 7;
-  animation: dashTravel .55s linear infinite;
+  animation: dashTravel .48s linear infinite;
 }
 
 .network-edge.active.katherine { stroke: #6ee8ff; color: #6ee8ff; }
 .network-edge.active.karen { stroke: #ff78c8; color: #ff78c8; }
 .network-edge.active.karencita { stroke: #79f2ff; color: #79f2ff; }
+
+.network-node {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+.network-node-hit {
+  fill: transparent;
+  stroke: transparent;
+  pointer-events: all;
+}
 
 .network-node-outer {
   fill: rgba(12, 8, 30, .78);
@@ -1326,6 +1356,16 @@ h3 { font-size: 13px; }
   fill: rgba(121, 214, 255, .38);
   filter: drop-shadow(0 0 3px rgba(107, 220, 255, .65));
 }
+
+.network-node.planned .network-node-outer {
+  stroke-width: 1.7;
+  fill: rgba(29, 18, 57, .72);
+  stroke-dasharray: 3 4;
+}
+
+.network-node.planned.katherine .network-node-outer { stroke: rgba(110,232,255,.62); }
+.network-node.planned.karen .network-node-outer { stroke: rgba(255,120,200,.60); }
+.network-node.planned.karencita .network-node-outer { stroke: rgba(121,242,255,.60); }
 
 .network-node.active .network-node-outer,
 .network-node.current .network-node-outer {
@@ -1377,4 +1417,32 @@ h3 { font-size: 13px; }
   0% { transform: translateX(-50%) scale(.7); opacity: .15; }
   55% { transform: translateX(-50%) scale(1.55); opacity: 1; }
   100% { transform: translateX(-50%) scale(1); opacity: .65; }
+}
+
+
+.path-network.agent-selected .network-node:not(.active):not(.current) .network-node-outer {
+  stroke: rgba(170, 199, 255, .34);
+}
+
+.path-network.agent-selected .network-node:hover .network-node-outer {
+  fill: rgba(55, 34, 105, .88);
+  stroke: #b8efff;
+  stroke-width: 2.4;
+  filter: drop-shadow(0 0 5px rgba(129, 228, 255, .72));
+}
+
+.path-network.agent-selected .network-node:hover .network-node-inner {
+  fill: #f5fdff;
+}
+
+.network-node[data-kind="destination"] .network-node-outer {
+  stroke-dasharray: 2 2;
+}
+
+.agent[data-visual-state="pathing"] .agent-name span::before {
+  content: "⟡ ";
+}
+
+.agent[data-visual-state="arriving"] .agent-name span::before {
+  content: "✦ ";
 }
