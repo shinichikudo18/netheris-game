@@ -184,7 +184,7 @@
         </aside>
 
         <div class="world-legend">
-          <span><i class="legend-dot"></i> Fase 1.2</span>
+          <span><i class="legend-dot"></i> Fase 2 Alpha</span>
           <span>El trabajo aún se simula · haz clic en estaciones y personajes.</span>
         </div>
       </div>
@@ -199,23 +199,77 @@
         <button id="reset-world" class="ghost" type="button">Volver al Hogar</button>
       </div>
 
+      <div class="engine-status">
+        <span><i class="engine-dot"></i> World State Engine</span>
+        <span id="engine-queue">Cola: 0</span>
+        <button id="toggle-engine-pause" class="mini-button" type="button">Pausar cola</button>
+      </div>
+
       <div class="lab-grid">
-        <div class="sim-buttons">
-          <button data-demo="katherine">Katherine · tablero</button>
-          <button data-demo="karen">Karen · investigar</button>
-          <button data-demo="karencita">Karencita · casa</button>
-          <button data-demo="meeting">Reunión</button>
-          <button data-demo="sleep">Descansar</button>
-          <button data-demo="sequence" class="primary">Secuencia completa</button>
+        <div class="lab-column">
+          <div class="sim-buttons">
+            <button data-demo="katherine">Katherine · tablero</button>
+            <button data-demo="karen">Karen · investigar</button>
+            <button data-demo="karencita">Karencita · casa</button>
+            <button data-demo="meeting">Reunión</button>
+            <button data-demo="sleep">Descansar</button>
+            <button data-demo="queue" class="primary">Probar cola Karen</button>
+            <button data-demo="sequence" class="primary wide">Secuencia completa</button>
+          </div>
+
+          <div class="event-injector">
+            <div class="section-title">
+              <div>
+                <p class="eyebrow">CONTRATO JSON</p>
+                <h3>Inyectar evento</h3>
+              </div>
+              <button id="load-event-example" class="mini-button" type="button">Ejemplo Karen</button>
+            </div>
+            <textarea id="event-input" spellcheck="false" aria-label="Evento JSON">{
+  "type": "agent.research.started",
+  "agent": "karen",
+  "state": "researching",
+  "activity": "Investigación manual",
+  "target": "research",
+  "animation": "work",
+  "source": "local-demo",
+  "duration_ms": 5000
+}</textarea>
+            <div class="injector-actions">
+              <button id="dispatch-event" class="primary-action" type="button">Enviar al mundo</button>
+              <span id="event-validation" class="validation-message">Contrato listo</span>
+            </div>
+          </div>
         </div>
-        <pre id="event-output">{
+
+        <div class="lab-column">
+          <div class="section-title">
+            <div>
+              <p class="eyebrow">ÚLTIMO EVENTO</p>
+              <h3>Payload normalizado</h3>
+            </div>
+          </div>
+          <pre id="event-output">{
   "source": "local-demo",
   "status": "ready"
 }</pre>
+
+          <div class="section-title history-title">
+            <div>
+              <p class="eyebrow">MEMORIA EFÍMERA</p>
+              <h3>Historial local</h3>
+            </div>
+            <button id="clear-history" class="mini-button" type="button">Limpiar</button>
+          </div>
+          <div id="event-history" class="event-history">
+            <p class="empty-history">Todavía no hay eventos.</p>
+          </div>
+        </div>
       </div>
     </section>
   </main>
 
+  <script src="./world-state.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
