@@ -15,7 +15,7 @@
       </div>
       <div class="world-status">
         <span class="pulse"></span>
-        <span>Simulación local</span>
+        <span>Simulación local · PET sprites</span>
       </div>
     </header>
 
@@ -63,24 +63,24 @@
 
           <article id="agent-katherine" class="agent katherine" data-agent="katherine">
             <div class="avatar">
-              <img src="./assets/katherine.png" alt="Katherine" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-              <span class="avatar-fallback" hidden>K</span>
+              <img class="pet-sprite" src="./assets/pets/katherine/frame_001.png" alt="Katherine">
+              <span class="avatar-fallback">K</span>
             </div>
             <div class="agent-label"><strong>Katherine</strong><span>Libre</span></div>
           </article>
 
           <article id="agent-karen" class="agent karen" data-agent="karen">
             <div class="avatar">
-              <img src="./assets/karen.png" alt="Karen" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-              <span class="avatar-fallback" hidden>Ka</span>
+              <img class="pet-sprite" src="./assets/pets/karen/frame_001.png" alt="Karen">
+              <span class="avatar-fallback">Ka</span>
             </div>
             <div class="agent-label"><strong>Karen</strong><span>Libre</span></div>
           </article>
 
           <article id="agent-karencita" class="agent karencita" data-agent="karencita">
             <div class="avatar">
-              <img src="./assets/karencita.png" alt="Karencita" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-              <span class="avatar-fallback" hidden>Ki</span>
+              <img class="pet-sprite" src="./assets/pets/karencita/frame_001.png" alt="Karencita">
+              <span class="avatar-fallback">Ki</span>
             </div>
             <div class="agent-label"><strong>Karencita</strong><span>Libre</span></div>
           </article>
@@ -96,7 +96,6 @@
             </div>
             <button id="reset-world" class="ghost">Volver al Hogar</button>
           </div>
-
           <div id="agent-list" class="agent-list"></div>
         </section>
 
@@ -104,14 +103,15 @@
           <p class="eyebrow">FASE 1</p>
           <h2>Simulador de eventos</h2>
           <p class="muted">
-            Todavía no hay conexión con Netheris real. Estos botones sirven para definir cómo se verá
-            cada actividad antes de conectar n8n, Platform Bridge o el futuro Event Bus.
+            Los sprites son reales; las tareas todavía son simuladas. Esto permite definir cómo
+            se ve cada acción antes de conectar Platform Bridge, n8n o Event Bus.
           </p>
           <div class="sim-buttons">
             <button data-demo="katherine">Katherine trabaja</button>
             <button data-demo="karen">Karen investiga</button>
             <button data-demo="karencita">Karencita revisa casa</button>
             <button data-demo="meeting">Reunión de las tres</button>
+            <button data-demo="sleep">Hora de descansar</button>
             <button data-demo="sequence" class="primary">Secuencia demo</button>
           </div>
         </section>
@@ -126,7 +126,6 @@
       </aside>
     </section>
   </main>
-
   <script src="./app.js"></script>
 </body>
 </html>
