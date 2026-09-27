@@ -24,7 +24,15 @@ const stationSelectors = {
   homeConsole: "[data-station='homeConsole']",
   portal: "[data-station='portal']",
   core: "[data-station='core']",
+  table: "[data-station='table']",
   "Mesa común": "[data-station='table']",
+};
+
+const stationActions = {
+  board: "katherine",
+  research: "karen",
+  homeConsole: "karencita",
+  table: "meeting",
 };
 
 const animationSets = {
@@ -327,13 +335,48 @@ document.querySelectorAll(".agent").forEach(el => {
 document.querySelectorAll(".world-object").forEach(node => {
   node.addEventListener("click", () => {
     const station = node.dataset.station;
+    const action = stationActions[station];
+
+    if (action) {
+      demo(action);
+      return;
+    }
+
+    if ((station === "core" || station === "portal") && selectedAgent) {
+      const target = station === "core" ? positions.core : positions.portal;
+      const label = station === "core" ? "Core Netheris" : "Enlace al mundo físico";
+      moveAgent(
+        selectedAgent,
+        target,
+        station === "core" ? "Consultando el Core" : "Observando el enlace físico",
+        station,
+        { type: "world.object.interaction", station },
+        station === "core" ? "work" : "action"
+      );
+      return;
+    }
+
     renderEvent({
       type: "world.object.selected",
       station,
       status: "informational",
+      hint: "Selecciona una de las chicas para interactuar con este objeto",
     });
   });
 });
+
+function updateLocalClock() {
+  const clock = document.querySelector("#local-clock");
+  if (!clock) return;
+  clock.textContent = new Intl.DateTimeFormat("es-CL", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(new Date());
+}
+
+updateLocalClock();
+setInterval(updateLocalClock, 30000);
 
 preloadFrames();
 
