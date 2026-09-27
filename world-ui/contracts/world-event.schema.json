@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://netheris.local/contracts/world-event.schema.json",
+  "title": "Netheris World Event",
+  "type": "object",
+  "required": ["type", "source", "target"],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "type": { "type": "string", "minLength": 1 },
+    "agent": {
+      "type": ["string", "null"],
+      "enum": ["katherine", "karen", "karencita", null]
+    },
+    "state": {
+      "type": "string",
+      "enum": ["idle", "moving", "working", "researching", "acting", "talking", "resting", "waiting", "error"]
+    },
+    "activity": { "type": "string" },
+    "target": { "type": "string", "minLength": 1 },
+    "animation": { "type": "string" },
+    "source": { "type": "string", "minLength": 1 },
+    "capability": { "type": ["string", "null"] },
+    "tool": { "type": ["string", "null"] },
+    "correlation_id": { "type": ["string", "null"] },
+    "duration_ms": { "type": "integer", "minimum": 0 },
+    "queue": { "type": "boolean" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": true
+}
