@@ -215,7 +215,14 @@
 
   function clearAgentHighlights(svg, agent) {
     svg?.querySelectorAll(`.network-edge.${agent}, .network-node.${agent}`).forEach(node => {
-      node.classList.remove(agent, "active", "planned", "current");
+      node.classList.remove(agent);
+
+      const stillOwned =
+        node.classList.contains("katherine") ||
+        node.classList.contains("karen") ||
+        node.classList.contains("karencita");
+
+      if (!stillOwned) node.classList.remove("active", "planned", "current");
     });
   }
 
@@ -237,14 +244,12 @@
   function highlightEdge(svg, a, b, agent) {
     const edge = svg?.querySelector(`[data-edge="${edgeId(a, b)}"]`);
     if (!edge) return;
-    edge.classList.remove("planned");
     edge.classList.add("active", agent);
   }
 
   function highlightNode(svg, nodeId, agent, current = false) {
     const node = svg?.querySelector(`[data-node="${nodeId}"]`);
     if (!node) return;
-    node.classList.remove("planned");
     node.classList.add(current ? "current" : "active", agent);
   }
 
