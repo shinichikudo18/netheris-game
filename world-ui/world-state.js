@@ -33,6 +33,7 @@
         tool: raw.tool || null,
         correlation_id: raw.correlation_id || null,
         duration_ms: Number.isFinite(raw.duration_ms) ? raw.duration_ms : 4200,
+        defer_completion: raw.defer_completion === true,
         queue: raw.queue !== false,
         timestamp: raw.timestamp || new Date().toISOString(),
         metadata: raw.metadata && typeof raw.metadata === "object" ? raw.metadata : {},
@@ -94,13 +95,33 @@
       this.dispatchEvent(new CustomEvent("world:event", { detail: structuredClone(event) }));
       this._emitState();
 
-      if (event.agent && event.duration_ms > 0 && event.state !== "idle") {
+      if (event.agent && event.duration_ms > 0 && event.state !== "idle" && !event.defer_completion) {
         const oldTimer = this._timers.get(event.agent);
         if (oldTimer) clearTimeout(oldTimer);
 
         const timer = setTimeout(() => this.complete(event.agent, event.id), event.duration_ms);
         this._timers.set(event.agent, timer);
       }
+    }
+
+    armCompletion(agent, eventId = null, durationMs = null) {
+      if (!AGENTS.includes(agent)) return false;
+      const current = this.agents[agent];
+      if (!current?.busy) return false;
+      if (eventId && current.current_event_id !== eventId) return false;
+
+      const timer = this._timers.get(agent);
+      if (timer) clearTimeout(timer);
+
+      const duration = Number.isFinite(durationMs) ? durationMs : 4200;
+      if (duration <= 0) return false;
+
+      this._timers.set(
+        agent,
+        setTimeout(() => this.complete(agent, current.current_event_id), duration)
+      );
+
+      return true;
     }
 
     complete(agent, eventId = null) {
