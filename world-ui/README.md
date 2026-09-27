@@ -1,90 +1,95 @@
-# Netheris World UI — Fase 2 Alpha
+# Netheris World UI — Fase 2 Alpha / Arcane Realm
 
 Macro-entrega local de la futura interfaz viva de Netheris.
 
-## Qué reúne esta fase
+## Dirección artística cerrada
 
-Esta entrega junta el trabajo visual de Fase 1.x con la base lógica que antes estaba prevista para Fase 2.
+Netheris se define visualmente como **mundo digital + magia + RPG/anime**.
 
-### Mundo
+No debe verse como:
 
-- El Hogar como escena principal, no como dashboard.
-- Katherine, Karen y Karencita representadas con sus PET reales.
-- Tablero de Katherine.
-- Estación de investigación de Karen.
-- Consola de casa de Karencita.
-- Core Netheris.
-- Portal al mundo físico.
-- Mesa común y lounge.
-- Iluminación ambiental por zonas.
-- Personajes más grandes y con movimiento direccional.
-- Día/noche visual según la hora local del navegador.
-- Interacción directa con los objetos del escenario.
+- dashboard corporativo;
+- NOC/SOC;
+- oficina futurista convencional;
+- simple habitación con pantallas.
 
-### World State Engine
+Debe sentirse como un **reino digital habitable**, donde la infraestructura lógica de Netheris se expresa como magia tecnológica:
+
+- datos → runas y corrientes de energía;
+- servicios → santuarios, forjas, archivos y cristales;
+- enlaces externos → portales;
+- Core → cristal/núcleo central;
+- reuniones → círculos rituales;
+- eventos → pulsos, caminos luminosos y actividad visible;
+- máquinas reales → lugares/artefactos del mundo.
+
+Las imágenes de referencia aportadas por Franco fijan el lenguaje visual: paisajes digitales oscuros azul/violeta, árboles luminosos, cristales, plataformas flotantes, runas, portales, arquitectura fantástica y partículas de energía.
+
+## Mundo actual
+
+La Fase 2 Alpha conserva toda la lógica previa pero rehace la capa visual:
+
+- cielo de éter con nebulosas y estrellas;
+- islas y torres flotantes al fondo;
+- plano principal con caminos rúnicos;
+- círculo arcano central;
+- árboles digitales;
+- campos de cristal;
+- Archivo de Katherine;
+- Forja de Karen;
+- Santuario de Karencita;
+- Puerta al Mundo Físico;
+- Núcleo de Netheris;
+- Círculo del Consejo;
+- auras propias de cada agente;
+- PET reales y animados;
+- día/noche según hora local.
+
+## World State Engine
 
 Archivo: `world-state.js`.
 
 Incluye:
 
-- estado independiente por agente;
+- estado independiente por Katherine, Karen y Karencita;
 - estados `idle / moving / working / researching / acting / talking / resting / waiting / error`;
 - cola independiente por agente;
-- eventos simultáneos entre agentes distintos;
-- duración de actividades;
-- transición automática a idle al completar;
-- pausa/reanudación de cola;
-- historial efímero local;
-- eventos de inicio, finalización, cola e invalidez;
-- API global local `window.netherisWorld`.
+- actividades simultáneas;
+- duración y finalización;
+- pausa/reanudación;
+- historial efímero;
+- API local `window.netherisWorld`.
 
-Ejemplo desde la consola del navegador:
-
-```js
-netherisWorld.submit({
-  type: "agent.research.started",
-  agent: "karen",
-  state: "researching",
-  activity: "Investigando prueba",
-  target: "research",
-  animation: "work",
-  source: "local-demo",
-  duration_ms: 5000
-})
-```
+La dirección artística es independiente de este motor: cambiar el escenario no rompe el contrato lógico.
 
 ## Contrato JSON
 
-Se agregó:
+Archivos:
 
 ```text
 contracts/world-event.schema.json
 contracts/README.md
 ```
 
-La UI futura no debe depender directamente de n8n, Home Assistant, Research Bridge o Platform Bridge. Esos sistemas deberán traducir su actividad al contrato de eventos de Netheris.
+Toda integración futura debe producir eventos normalizados.
 
-Regla:
+Regla inalterable:
 
-> La interfaz nunca inventa trabajo real.
+> Netheris puede tener animación ambiental, pero nunca debe fingir que una agente está trabajando si no existe un evento real que lo respalde.
 
-`source=local-demo` significa simulación. Una integración real deberá usar su origen real.
+`source=local-demo` identifica la simulación actual.
 
-Nunca incluir secretos, credenciales, tokens o payloads sensibles en los eventos.
+## Oráculo de pruebas
 
-## Laboratorio local
-
-El botón **Simulación** abre el laboratorio. Incluye:
+El botón **Oráculo** abre el laboratorio local:
 
 - acciones rápidas;
-- prueba de cola de Karen;
+- cola de Karen;
 - secuencia multiagente;
-- editor JSON para inyectar eventos manuales;
-- validación básica;
-- payload normalizado;
-- historial local;
-- contador de eventos en cola;
-- pausa y reanudación de colas.
+- editor JSON;
+- historial;
+- pausa/reanudación;
+- payload normalizado.
 
 ## PET frames
 
@@ -95,20 +100,11 @@ Mapeo provisional:
 - idle: 001–004;
 - caminar hacia cámara: 034–037;
 - caminar alejándose: 038–041;
-- trabajo/tecnología: 019–020;
+- trabajo: 019–020;
 - interacción/energía: 043–044;
 - sentada: 042;
 - descanso: 050;
-- espera/error: primeros frames de expresión, provisional.
-
-## Importar ZIP
-
-```bash
-python3 scripts/import_pet_frames.py \
-  /home/katherine/Descargas/Katherine_PET_Netheris_50_frames.zip \
-  /home/katherine/Descargas/Karen_PET_Netheris_50_frames.zip \
-  /home/katherine/Descargas/Karencita_PET_Netheris_50_frames.zip
-```
+- espera/error: expresiones provisionales.
 
 ## Ejecutar
 
@@ -122,16 +118,18 @@ Abrir:
 http://localhost:8080
 ```
 
-## Qué falta antes de conectar producción
+## Próxima macro-entrega
 
-La siguiente macro-entrega deberá centrarse en la conexión real:
+La conexión real con CT116/Platform Bridge queda deliberadamente después de consolidar esta identidad visual.
 
-1. adaptador WebSocket para Platform Bridge;
-2. traducción de eventos existentes `typing/investigando`;
-3. ACK/finalización de tareas reales;
+Luego:
+
+1. adaptador WebSocket;
+2. detección de sesión/autenticación;
+3. traducción de `typing/investigando`;
 4. reconexión y modo degradado;
-5. separación clara entre `local-demo` y fuentes reales;
-6. luego adaptadores n8n/Research Bridge/Home Assistant;
-7. finalmente Event Bus como fuente normalizada principal.
+5. distinción visual REAL vs SIMULADO;
+6. adaptadores n8n/Research Bridge/Home Assistant;
+7. Event Bus como fuente principal.
 
-No desplegar esta UI como reemplazo del CT Netheris-V1 todavía.
+No reemplazar todavía Netheris-V1.
