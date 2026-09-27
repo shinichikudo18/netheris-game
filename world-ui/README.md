@@ -2,13 +2,29 @@
 
 Primer prototipo visual de la futura interfaz viva de Netheris.
 
-## Objetivo de esta fase
+## Objetivo
 
-Definir cómo se ve **El Hogar** y cómo se traducen actividades de Katherine, Karen y Karencita a movimiento visible, sin conectar todavía con servicios reales.
+Definir cómo se ve **El Hogar** y cómo las actividades de Katherine, Karen y Karencita se traducen a movimiento y animación, sin conectar todavía servicios reales.
 
-Regla central:
+> La interfaz no debe inventar trabajo real. En Fase 1 los eventos siguen marcados como `local-demo`.
 
-> La interfaz no debe inventar trabajo real. En esta fase todos los movimientos son simulados y están marcados como `local-demo`. Más adelante solo las animaciones de actividad serán disparadas por eventos reales de Netheris.
+## PET frames usados
+
+Los tres paquetes originales tienen **50 frames PNG transparentes de 256×256** y comparten la misma numeración base:
+
+- `Katherine_PET_Netheris_50_frames*.zip` → Katherine.
+- `Karen_PET_Netheris_50_frames*.zip` → Karen.
+- `Karencita_PET_Netheris_50_frames*.zip` → Karencita.
+
+La UI ya soporta animación por frames:
+
+- reposo/expresiones: primeros frames;
+- caminar: frames 034–037 para el prototipo;
+- trabajo/consulta: frames 019–020;
+- sentada: frame 042;
+- dormir: frame 050.
+
+Este mapeo es provisional y se afinará visualmente en las siguientes iteraciones.
 
 ## Ejecutar en Linux
 
@@ -17,48 +33,48 @@ git clone https://github.com/shinichikudo18/netheris-game.git
 cd netheris-game
 git checkout world-ui-v2-phase1
 cd world-ui
+```
+
+### Importar los tres ZIP PET
+
+No renombres 150 PNG a mano. Usa:
+
+```bash
+python3 scripts/import_pet_frames.py \
+  "/ruta/Katherine_PET_Netheris_50_frames(1).zip" \
+  "/ruta/Karen_PET_Netheris_50_frames(1).zip" \
+  "/ruta/Karencita_PET_Netheris_50_frames(1).zip"
+```
+
+El script genera:
+
+```text
+assets/pets/katherine/frame_001.png ... frame_050.png
+assets/pets/karen/frame_001.png ... frame_050.png
+assets/pets/karencita/frame_001.png ... frame_050.png
+```
+
+Luego:
+
+```bash
 python3 -m http.server 8080
 ```
 
-Abrir:
+Abrir `http://localhost:8080`.
 
-```text
-http://localhost:8080
-```
+Si los assets todavía no están importados, la UI usa iniciales como fallback.
 
-No necesita npm ni dependencias en esta fase.
+## Qué probar
 
-## Avatares
+- Idle animado de las tres.
+- Caminar al cambiar de estación.
+- Katherine trabajando en su tablero.
+- Karen investigando.
+- Karencita revisando casa.
+- Reunión de las tres.
+- Estado de descanso.
+- Payload JSON simulado de cada acción.
 
-Coloca tus imágenes existentes aquí:
+## Próxima iteración
 
-```text
-world-ui/assets/katherine.png
-world-ui/assets/karen.png
-world-ui/assets/karencita.png
-```
-
-Si todavía no están, la interfaz usa iniciales como fallback.
-
-## Qué se puede probar
-
-- Katherine moviéndose hacia su tablero.
-- Karen moviéndose a su estación de investigación.
-- Karencita moviéndose a la consola de casa.
-- Las tres reuniéndose en la mesa común.
-- Estado textual de ubicación/actividad.
-- Payload de evento simulado que será la base del contrato real posterior.
-
-## Siguiente fase
-
-Fase 2 convertirá este prototipo en un **World State Model** explícito:
-
-- esquema de eventos;
-- estados `idle / moving / working / talking / waiting / error`;
-- catálogo de ubicaciones;
-- cola de actividades;
-- transición por eventos;
-- simulador JSON;
-- separación entre animación ambiental y actividad real.
-
-Después de estabilizar Fase 2 se conectará primero al Platform Bridge de Netheris-V1 mediante WebSocket, sin tocar todavía n8n ni el futuro Event Bus.
+Afinar el escenario de El Hogar y clasificar los 50 frames completos en un manifiesto de animaciones. Después pasamos al **World State Model**, todavía local, antes de conectar Platform Bridge.
