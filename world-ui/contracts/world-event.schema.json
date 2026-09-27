@@ -23,6 +23,7 @@
     "tool": { "type": ["string", "null"] },
     "correlation_id": { "type": ["string", "null"] },
     "duration_ms": { "type": "integer", "minimum": 0 },
+    "defer_completion": { "type": "boolean" },
     "queue": { "type": "boolean" },
     "timestamp": { "type": "string", "format": "date-time" },
     "metadata": { "type": "object" }
