@@ -102,6 +102,21 @@ const visualPositions = {
   karencita: { ...positions.idleKarencita },
 };
 
+const visualNodes = {
+  katherine: NetherisPaths.homeNode.katherine,
+  karen: NetherisPaths.homeNode.karen,
+  karencita: NetherisPaths.homeNode.karencita,
+};
+
+const movementGeneration = {
+  katherine: 0,
+  karen: 0,
+  karencita: 0,
+};
+
+const activeEventByAgent = {};
+const networkSvg = document.querySelector("#path-network");
+
 let selectedAgent = null;
 
 function framePath(agent, frame) {
@@ -172,61 +187,158 @@ function resolveTarget(agent, target) {
 }
 
 function chooseWalkAnimation(from, to) {
-  return to.top < from.top ? "walkUp" : "walkDown";
+  return to.y < from.y ? "walkUp" : "walkDown";
 }
 
-function updateRouteTrail(from, to) {
-  const trail = document.querySelector("#route-trail");
-  const world = document.querySelector("#world");
-  if (!trail || !world || !from || !to) return;
-
-  const width = world.clientWidth;
-  const height = world.clientHeight;
-  const x1 = from.left / 100 * width;
-  const y1 = from.top / 100 * height;
-  const x2 = to.left / 100 * width;
-  const y2 = to.top / 100 * height;
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const distance = Math.hypot(dx, dy);
-  const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-  trail.style.left = `${x1}px`;
-  trail.style.top = `${y1}px`;
-  trail.style.width = `${distance}px`;
-  trail.style.transform = `rotate(${angle}deg)`;
-  trail.classList.add("active");
-
-  clearTimeout(updateRouteTrail.timer);
-  updateRouteTrail.timer = setTimeout(() => trail.classList.remove("active"), 1000);
+function wait(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function moveVisual(agent, event) {
+function segmentDuration(from, to) {
+  const distance = Math.hypot(to.x - from.x, to.y - from.y);
+  return Math.max(190, Math.min(480, Math.round(distance * 23)));
+}
+
+function clearAgentPath(agent) {
+  if (!networkSvg) return;
+
+  networkSvg.querySelectorAll(`.network-edge.${agent}, .network-node.${agent}`).forEach(node => {
+    node.classList.remove(agent);
+
+    const stillOwned =
+      node.classList.contains("katherine") ||
+      node.classList.contains("karen") ||
+      node.classList.contains("karencita");
+
+    if (!stillOwned) node.classList.remove("active", "current");
+  });
+}
+
+function setVisualState(agent, state) {
   const el = document.querySelector(`#agent-${agent}`);
-  const previous = visualPositions[agent];
-  const target = resolveTarget(agent, event.target);
-  const walkAnimation = chooseWalkAnimation(previous, target);
+  if (!el) return;
 
-  el.classList.toggle("face-left", target.left < previous.left);
+  el.dataset.visualState = state;
+  el.classList.remove("pathing", "arriving", "interacting", "returning");
+  if (state) el.classList.add(state);
+}
+
+async function moveVisual(agent, event) {
+  const el = document.querySelector(`#agent-${agent}`);
+  if (!el) return;
+
+  const generation = ++movementGeneration[agent];
+  activeEventByAgent[agent] = event;
+
+  const fromNodeId = visualNodes[agent] || NetherisPaths.homeNode[agent];
+  const toNodeId = NetherisPaths.nodeForTarget(agent, event.target);
+  const path = NetherisPaths.pathfind(fromNodeId, toNodeId);
+  const route = path.length ? path : [fromNodeId, toNodeId];
+
+  engine.recordPhase(event, "departed", {
+    metadata: {
+      ...event.metadata,
+      visual_state: "pathing",
+      path: route,
+    },
+  });
+
   el.classList.add("moving", "active");
+  setVisualState(agent, "pathing");
   el.dataset.state = event.state;
-  el.style.left = `${target.left}%`;
-  el.style.top = `${target.top}%`;
-  el.style.zIndex = String(10 + Math.round(target.top));
+  el.querySelector(".agent-bubble span").textContent = `En ruta · ${event.activity}`;
+
+  clearAgentPath(agent);
+  NetherisPaths.highlightNode(networkSvg, fromNodeId, agent, true);
+
+  engine.recordPhase(event, "pathing", {
+    metadata: {
+      ...event.metadata,
+      visual_state: "pathing",
+      path: route,
+    },
+  });
+
+  for (let index = 1; index < route.length; index += 1) {
+    if (generation !== movementGeneration[agent]) return;
+
+    const previousId = route[index - 1];
+    const nextId = route[index];
+    const previous = NetherisPaths.nodes[previousId];
+    const next = NetherisPaths.nodes[nextId];
+    if (!previous || !next) continue;
+
+    clearAgentPath(agent);
+    NetherisPaths.highlightEdge(networkSvg, previousId, nextId, agent);
+    NetherisPaths.highlightNode(networkSvg, previousId, agent);
+    NetherisPaths.highlightNode(networkSvg, nextId, agent, true);
+
+    el.classList.toggle("face-left", next.x < previous.x);
+    const walkAnimation = chooseWalkAnimation(previous, next);
+    playAnimation(agent, walkAnimation);
+
+    const duration = segmentDuration(previous, next);
+    el.style.setProperty("--move-ms", `${duration}ms`);
+    el.style.left = `${next.x}%`;
+    el.style.top = `${next.y}%`;
+    el.style.zIndex = String(20 + Math.round(next.y));
+
+    visualPositions[agent] = { left: next.x, top: next.y };
+    await wait(duration + 34);
+  }
+
+  if (generation !== movementGeneration[agent]) return;
+
+  const finalPosition = resolveTarget(agent, event.target);
+  const nodePosition = NetherisPaths.nodes[toNodeId];
+
+  if (
+    nodePosition &&
+    (Math.abs(finalPosition.left - nodePosition.x) > 0.2 ||
+      Math.abs(finalPosition.top - nodePosition.y) > 0.2)
+  ) {
+    const duration = 190;
+    el.style.setProperty("--move-ms", `${duration}ms`);
+    el.style.left = `${finalPosition.left}%`;
+    el.style.top = `${finalPosition.top}%`;
+    el.style.zIndex = String(20 + Math.round(finalPosition.top));
+    visualPositions[agent] = { ...finalPosition };
+    await wait(duration + 24);
+  }
+
+  if (generation !== movementGeneration[agent]) return;
+
+  visualNodes[agent] = toNodeId;
+  el.classList.remove("moving");
+  setVisualState(agent, "arriving");
+  el.querySelector(".agent-bubble span").textContent = `Llegando · ${event.activity}`;
+  clearAgentPath(agent);
+  NetherisPaths.highlightNode(networkSvg, toNodeId, agent, true);
+
+  engine.recordPhase(event, "arrived", {
+    metadata: {
+      ...event.metadata,
+      visual_state: "arriving",
+      node: toNodeId,
+    },
+  });
+
+  await wait(430);
+  if (generation !== movementGeneration[agent]) return;
+
+  setVisualState(agent, "interacting");
   el.querySelector(".agent-bubble span").textContent = event.activity;
+  playAnimation(agent, event.animation || "idle");
 
-  playAnimation(agent, walkAnimation);
-  updateRouteTrail(previous, target);
-  visualPositions[agent] = { ...target };
+  engine.recordPhase(event, "interacting", {
+    metadata: {
+      ...event.metadata,
+      visual_state: "interacting",
+      node: toNodeId,
+    },
+  });
 
-  clearTimeout(el.arrivalTimer);
   clearTimeout(el.activeTimer);
-
-  el.arrivalTimer = setTimeout(() => {
-    el.classList.remove("moving");
-    playAnimation(agent, event.animation || "idle");
-  }, 900);
-
   el.activeTimer = setTimeout(() => {
     if (!el.classList.contains("selected")) el.classList.remove("active");
   }, Math.max(4200, event.duration_ms || 0));
@@ -235,10 +347,32 @@ function moveVisual(agent, event) {
 function settleVisual(agent) {
   const el = document.querySelector(`#agent-${agent}`);
   if (!el) return;
+
+  movementGeneration[agent] += 1;
+  clearAgentPath(agent);
+
+  const nodeId = visualNodes[agent];
+  if (nodeId) NetherisPaths.highlightNode(networkSvg, nodeId, agent, true);
+
   el.dataset.state = "idle";
+  setVisualState(agent, "");
+  el.classList.remove("moving");
   el.querySelector(".agent-bubble span").textContent = "Disponible";
-  if (!el.classList.contains("moving")) playAnimation(agent, "idle");
+  playAnimation(agent, "idle");
+
+  const event = activeEventByAgent[agent];
+  if (event) {
+    engine.recordPhase(event, "visual-complete", {
+      metadata: {
+        ...event.metadata,
+        visual_state: "idle",
+        node: nodeId,
+      },
+    });
+  }
+
   setTimeout(() => {
+    clearAgentPath(agent);
     if (!el.classList.contains("selected")) el.classList.remove("active");
   }, 900);
 }
@@ -454,11 +588,15 @@ function resetVisuals() {
     const target = resolveTarget(agent, "Hogar");
     const el = document.querySelector(`#agent-${agent}`);
     visualPositions[agent] = { ...target };
+    visualNodes[agent] = NetherisPaths.homeNode[agent];
+    movementGeneration[agent] += 1;
+    clearAgentPath(agent);
     el.style.left = `${target.left}%`;
     el.style.top = `${target.top}%`;
     el.style.zIndex = String(10 + Math.round(target.top));
     el.dataset.state = "idle";
-    el.classList.remove("moving", "active", "face-left");
+    el.dataset.visualState = "idle";
+    el.classList.remove("moving", "active", "face-left", "pathing", "arriving", "interacting", "returning");
     el.querySelector(".agent-bubble span").textContent = "Libre";
     playAnimation(agent, "idle");
   });
@@ -632,6 +770,7 @@ document.querySelectorAll(".world-object").forEach(node => {
 });
 
 preloadFrames();
+NetherisPaths.render(networkSvg);
 
 Object.keys(initialState).forEach(agent => {
   const target = resolveTarget(agent, "Hogar");
@@ -640,7 +779,10 @@ Object.keys(initialState).forEach(agent => {
   el.style.top = `${target.top}%`;
   el.style.zIndex = String(10 + Math.round(target.top));
   el.dataset.state = "idle";
+  el.dataset.visualState = "idle";
   playAnimation(agent, "idle");
+  NetherisPaths.highlightNode(networkSvg, visualNodes[agent], agent, true);
+  setTimeout(() => clearAgentPath(agent), 900);
 });
 
 renderQueue(engine.snapshot().queues);
