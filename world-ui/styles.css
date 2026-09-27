@@ -1000,3 +1000,187 @@ h2 { font-size: 18px; }
   .world-legend span:last-child { display: none; }
   .sim-buttons { grid-template-columns: 1fr 1fr; }
 }
+
+
+/* Phase 2 Alpha — World State Engine laboratory */
+.engine-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 9px 11px;
+  border: 1px solid rgba(107, 225, 181, .12);
+  border-radius: 12px;
+  background: rgba(50, 126, 98, .05);
+  color: #aebbd0;
+  font-size: 10px;
+}
+
+.engine-status span:first-child {
+  margin-right: auto;
+  color: #d8e8df;
+  font-weight: 700;
+}
+
+.engine-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 12px rgba(98,231,168,.55);
+}
+
+.mini-button,
+.primary-action {
+  border: 1px solid rgba(151, 167, 222, .15);
+  border-radius: 9px;
+  background: rgba(255,255,255,.035);
+  color: #cfd9ec;
+  cursor: pointer;
+}
+
+.mini-button {
+  min-height: 29px;
+  padding: 0 9px;
+  font-size: 9px;
+}
+
+.primary-action {
+  min-height: 36px;
+  padding: 0 13px;
+  background: linear-gradient(135deg, rgba(113,89,246,.30), rgba(65,189,231,.14));
+}
+
+.lab-column {
+  min-width: 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.section-title h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.event-injector {
+  margin-top: 13px;
+  padding: 12px;
+  border: 1px solid rgba(153,169,226,.10);
+  border-radius: 14px;
+  background: rgba(5,9,18,.28);
+}
+
+#event-input {
+  display: block;
+  width: 100%;
+  min-height: 210px;
+  resize: vertical;
+  padding: 11px;
+  border: 1px solid rgba(129,148,207,.13);
+  border-radius: 11px;
+  outline: none;
+  background: rgba(3,6,13,.76);
+  color: #b9c7e1;
+  font: 10px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+#event-input:focus {
+  border-color: rgba(111,174,255,.34);
+  box-shadow: 0 0 0 3px rgba(80,142,255,.05);
+}
+
+.injector-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 9px;
+}
+
+.validation-message {
+  color: #7f8ca5;
+  font-size: 9px;
+}
+
+.validation-message.ok { color: var(--green); }
+.validation-message.error { color: #ff8b9e; }
+
+.history-title { margin-top: 14px; }
+
+.event-history {
+  display: grid;
+  gap: 7px;
+  max-height: 240px;
+  overflow: auto;
+}
+
+.history-item {
+  padding: 8px 9px;
+  border: 1px solid rgba(255,255,255,.055);
+  border-radius: 10px;
+  background: rgba(255,255,255,.018);
+}
+
+.history-item header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+}
+
+.history-item strong { color: #dbe3f3; }
+.history-item time { margin-left: auto; color: #68758e; }
+
+.history-item p {
+  margin-top: 4px;
+  color: #8d9ab1;
+  font-size: 9px;
+  line-height: 1.35;
+}
+
+.history-phase {
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(126,99,255,.09);
+  color: #aea1ff;
+}
+
+.empty-history {
+  color: #6f7b92;
+  font-size: 9px;
+}
+
+.sim-buttons .wide {
+  grid-column: 1 / -1;
+}
+
+.agent[data-state="researching"] .agent-bubble { border-color: rgba(255,105,169,.45); }
+.agent[data-state="working"] .agent-bubble { border-color: rgba(143,112,255,.45); }
+.agent[data-state="acting"] .agent-bubble { border-color: rgba(67,214,255,.45); }
+.agent[data-state="talking"] .agent-bubble { border-color: rgba(255,205,120,.35); }
+.agent[data-state="error"] .agent-bubble { border-color: rgba(255,95,110,.5); }
+
+.world[data-daypart="night"] .panorama {
+  background:
+    radial-gradient(circle at 50% 115%, rgba(44, 164, 223, .18), transparent 46%),
+    linear-gradient(180deg, rgba(10, 17, 40, .38), rgba(3, 7, 21, .76));
+}
+
+.world[data-daypart="day"] .panorama {
+  background:
+    radial-gradient(circle at 50% 115%, rgba(80, 208, 245, .19), transparent 46%),
+    linear-gradient(180deg, rgba(42, 63, 102, .25), rgba(7, 17, 33, .54));
+}
+
+@media (max-width: 720px) {
+  .engine-status { flex-wrap: wrap; }
+  .engine-status span:first-child { width: 100%; }
+  #event-input { min-height: 170px; }
+}
