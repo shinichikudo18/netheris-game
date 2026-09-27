@@ -571,8 +571,7 @@ document.querySelector("#toggle-engine-pause").addEventListener("click", () => {
 });
 
 document.querySelector("#clear-history").addEventListener("click", () => {
-  engine.history = [];
-  renderHistory([]);
+  engine.clearHistory();
   renderPayload({ source: "local-demo", status: "history-cleared" });
 });
 
