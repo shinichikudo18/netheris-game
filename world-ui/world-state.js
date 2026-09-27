@@ -128,6 +128,7 @@
         ...current,
         busy: false,
         state: "idle",
+        activity: current.target === "Hogar" ? "Libre en El Hogar" : `Disponible en ${current.target}`,
         current_event_id: null,
         updated_at: completedEvent.timestamp,
       };
@@ -151,6 +152,11 @@
       this.paused = Boolean(value);
       this.dispatchEvent(new CustomEvent("world:pause", { detail: { paused: this.paused } }));
       if (!this.paused) AGENTS.forEach(agent => this._drain(agent));
+    }
+
+    clearHistory() {
+      this.history = [];
+      this.dispatchEvent(new CustomEvent("world:history", { detail: [] }));
     }
 
     reset() {
