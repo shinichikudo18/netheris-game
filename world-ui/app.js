@@ -25,7 +25,6 @@ const stationSelectors = {
   portal: "[data-station='portal']",
   core: "[data-station='core']",
   table: "[data-station='table']",
-  "Mesa común": "[data-station='table']",
 };
 
 const stationActions = {
@@ -44,35 +43,54 @@ const animationSets = {
   sit: { frames: [42], ms: 1000, loop: true },
   action: { frames: [43, 44, 43], ms: 280, loop: true },
   sleep: { frames: [50], ms: 1000, loop: true },
+  waiting: { frames: [9, 10, 9], ms: 520, loop: true },
+  error: { frames: [11, 12, 11], ms: 420, loop: true },
 };
 
 const initialState = {
   katherine: {
     name: "Katherine",
+    role: roles.katherine,
+    busy: false,
+    state: "idle",
     activity: "Libre en El Hogar",
     target: "Hogar",
     source: "local-demo",
-    position: positions.idleKatherine,
+    current_event_id: null,
   },
   karen: {
     name: "Karen",
+    role: roles.karen,
+    busy: false,
+    state: "idle",
     activity: "Libre en El Hogar",
     target: "Hogar",
     source: "local-demo",
-    position: positions.idleKaren,
+    current_event_id: null,
   },
   karencita: {
     name: "Karencita",
+    role: roles.karencita,
+    busy: false,
+    state: "idle",
     activity: "Libre en El Hogar",
     target: "Hogar",
     source: "local-demo",
-    position: positions.idleKarencita,
+    current_event_id: null,
   },
 };
 
-const state = structuredClone(initialState);
+const engine = new NetherisWorldState(initialState);
+globalThis.netherisWorld = engine;
+
 const animationTimers = {};
 const assetsAvailable = { katherine: true, karen: true, karencita: true };
+const visualPositions = {
+  katherine: { ...positions.idleKatherine },
+  karen: { ...positions.idleKaren },
+  karencita: { ...positions.idleKarencita },
+};
+
 let selectedAgent = null;
 
 function framePath(agent, frame) {
@@ -123,33 +141,40 @@ function playAnimation(agent, name) {
   animationTimers[agent] = setInterval(() => {
     index = (index + 1) % animation.frames.length;
     setAgentFrame(agent, animation.frames[index]);
-    if (!animation.loop && index === animation.frames.length - 1) {
-      clearInterval(animationTimers[agent]);
-    }
   }, animation.ms);
 }
 
-function setStationOccupied(target, active = true) {
-  document.querySelectorAll(".world-object.occupied").forEach(node => node.classList.remove("occupied"));
-  const selector = stationSelectors[target];
-  if (active && selector) {
-    document.querySelector(selector)?.classList.add("occupied");
+function resolveTarget(agent, target) {
+  if (target === "Hogar") {
+    if (agent === "katherine") return positions.idleKatherine;
+    if (agent === "karen") return positions.idleKaren;
+    return positions.idleKarencita;
   }
+
+  if (target === "table" || target === "Mesa común") {
+    if (agent === "katherine") return positions.tableKatherine;
+    if (agent === "karen") return positions.tableKaren;
+    return positions.tableKarencita;
+  }
+
+  return positions[target] || resolveTarget(agent, "Hogar");
+}
+
+function chooseWalkAnimation(from, to) {
+  return to.top < from.top ? "walkUp" : "walkDown";
 }
 
 function updateRouteTrail(from, to) {
   const trail = document.querySelector("#route-trail");
-  if (!trail || !from || !to) return;
-
   const world = document.querySelector("#world");
+  if (!trail || !world || !from || !to) return;
+
   const width = world.clientWidth;
   const height = world.clientHeight;
-
   const x1 = from.left / 100 * width;
   const y1 = from.top / 100 * height;
   const x2 = to.left / 100 * width;
   const y2 = to.top / 100 * height;
-
   const dx = x2 - x1;
   const dy = y2 - y1;
   const distance = Math.hypot(dx, dy);
@@ -165,68 +190,73 @@ function updateRouteTrail(from, to) {
   updateRouteTrail.timer = setTimeout(() => trail.classList.remove("active"), 1000);
 }
 
-function chooseWalkAnimation(from, to) {
-  return to.top < from.top ? "walkUp" : "walkDown";
-}
-
-function moveAgent(agent, position, activity, target, event = {}, arrivalAnimation = "idle") {
+function moveVisual(agent, event) {
   const el = document.querySelector(`#agent-${agent}`);
-  const previous = state[agent].position;
-  const walkAnimation = chooseWalkAnimation(previous, position);
+  const previous = visualPositions[agent];
+  const target = resolveTarget(agent, event.target);
+  const walkAnimation = chooseWalkAnimation(previous, target);
 
-  state[agent] = {
-    ...state[agent],
-    position,
-    activity,
-    target,
-    source: event.source || "local-demo",
-  };
-
-  el.classList.toggle("face-left", position.left < previous.left);
+  el.classList.toggle("face-left", target.left < previous.left);
   el.classList.add("moving", "active");
-  el.style.left = `${position.left}%`;
-  el.style.top = `${position.top}%`;
-  el.style.zIndex = String(10 + Math.round(position.top));
-  el.querySelector(".agent-bubble span").textContent = activity;
+  el.dataset.state = event.state;
+  el.style.left = `${target.left}%`;
+  el.style.top = `${target.top}%`;
+  el.style.zIndex = String(10 + Math.round(target.top));
+  el.querySelector(".agent-bubble span").textContent = event.activity;
 
   playAnimation(agent, walkAnimation);
-  updateRouteTrail(previous, position);
-  setStationOccupied(target);
+  updateRouteTrail(previous, target);
+  visualPositions[agent] = { ...target };
 
   clearTimeout(el.arrivalTimer);
   clearTimeout(el.activeTimer);
 
   el.arrivalTimer = setTimeout(() => {
     el.classList.remove("moving");
-    playAnimation(agent, arrivalAnimation);
+    playAnimation(agent, event.animation || "idle");
   }, 900);
 
   el.activeTimer = setTimeout(() => {
     if (!el.classList.contains("selected")) el.classList.remove("active");
-  }, 4200);
-
-  renderEvent({ agent, activity, target, animation: arrivalAnimation, ...event });
-
-  if (selectedAgent === agent) renderInspector(agent);
+  }, Math.max(4200, event.duration_ms || 0));
 }
 
-function renderEvent(payload) {
-  document.querySelector("#event-output").textContent = JSON.stringify({
-    source: "local-demo",
-    timestamp: new Date().toISOString(),
-    ...payload,
-  }, null, 2);
+function settleVisual(agent) {
+  const el = document.querySelector(`#agent-${agent}`);
+  if (!el) return;
+  el.dataset.state = "idle";
+  el.querySelector(".agent-bubble span").textContent = "Disponible";
+  if (!el.classList.contains("moving")) playAnimation(agent, "idle");
+  setTimeout(() => {
+    if (!el.classList.contains("selected")) el.classList.remove("active");
+  }, 900);
+}
+
+function refreshOccupancy(snapshot) {
+  document.querySelectorAll(".world-object.occupied").forEach(node => node.classList.remove("occupied"));
+
+  Object.values(snapshot.agents).forEach(item => {
+    if (!item.busy) return;
+    const target = item.target === "Mesa común" ? "table" : item.target;
+    const selector = stationSelectors[target];
+    if (selector) document.querySelector(selector)?.classList.add("occupied");
+  });
+}
+
+function renderPayload(payload) {
+  const output = document.querySelector("#event-output");
+  if (output) output.textContent = JSON.stringify(payload, null, 2);
 }
 
 function renderInspector(agent) {
-  const item = state[agent];
+  const item = engine.snapshot().agents[agent];
   const inspector = document.querySelector("#agent-inspector");
+  if (!item || !inspector) return;
 
   document.querySelectorAll(".agent.selected").forEach(node => node.classList.remove("selected"));
 
   selectedAgent = agent;
   document.querySelector(`#agent-${agent}`)?.classList.add("selected");
-
   document.querySelector("#inspector-name").textContent = item.name;
   document.querySelector("#inspector-role").textContent = roles[agent];
   document.querySelector("#inspector-activity").textContent = item.activity;
@@ -241,67 +271,189 @@ function closeInspector() {
   document.querySelectorAll(".agent.selected").forEach(node => node.classList.remove("selected"));
 }
 
-function resetWorld() {
-  Object.assign(state, structuredClone(initialState));
-  setStationOccupied(null, false);
+function renderQueue(queues) {
+  const count = Object.values(queues).reduce((sum, queue) => sum + queue.length, 0);
+  document.querySelector("#engine-queue").textContent = `Cola: ${count}`;
+}
 
-  moveAgent("katherine", positions.idleKatherine, "Libre en El Hogar", "Hogar", { type: "agent.idle" }, "idle");
-  setTimeout(() => moveAgent("karen", positions.idleKaren, "Libre en El Hogar", "Hogar", { type: "agent.idle" }, "idle"), 100);
-  setTimeout(() => moveAgent("karencita", positions.idleKarencita, "Libre en El Hogar", "Hogar", { type: "agent.idle" }, "idle"), 200);
+function renderHistory(history) {
+  const container = document.querySelector("#event-history");
+  if (!container) return;
+
+  if (!history.length) {
+    container.innerHTML = '<p class="empty-history">Todavía no hay eventos.</p>';
+    return;
+  }
+
+  container.innerHTML = history.slice(0, 12).map(item => {
+    const time = new Date(item.timestamp).toLocaleTimeString("es-CL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    const subject = item.agent ? item.agent : "world";
+    return `
+      <article class="history-item">
+        <header>
+          <strong>${escapeHtml(subject)}</strong>
+          <span class="history-phase">${escapeHtml(item.phase || "event")}</span>
+          <time>${escapeHtml(time)}</time>
+        </header>
+        <p>${escapeHtml(item.activity || item.type)} · ${escapeHtml(item.target || "-")}</p>
+      </article>
+    `;
+  }).join("");
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function submitEvent(event) {
+  const result = engine.submit(event);
+
+  if (!result.accepted) {
+    renderPayload({ status: "invalid", errors: result.errors, event: result.event });
+    setValidation(result.errors.join(" · "), false);
+  } else if (result.queued) {
+    renderPayload({ status: "queued", event: result.event });
+  } else {
+    renderPayload({ status: "started", event: result.event });
+  }
+
+  return result;
 }
 
 function demo(type) {
   if (type === "katherine") {
-    moveAgent("katherine", positions.board, "Organizando y coordinando", "board", {
-      type: "agent.activity.started",
+    submitEvent({
+      type: "agent.coordination.started",
+      agent: "katherine",
+      state: "working",
+      activity: "Organizando y coordinando",
+      target: "board",
+      animation: "work",
       capability: "coordination",
-    }, "work");
+      source: "local-demo",
+      duration_ms: 5200,
+    });
   }
 
   if (type === "karen") {
-    moveAgent("karen", positions.research, "Investigando", "research", {
-      type: "agent.activity.started",
+    submitEvent({
+      type: "agent.research.started",
+      agent: "karen",
+      state: "researching",
+      activity: "Investigando",
+      target: "research",
+      animation: "work",
       capability: "research",
       tool: "future:research-bridge",
-    }, "work");
+      source: "local-demo",
+      duration_ms: 6200,
+    });
   }
 
   if (type === "karencita") {
-    moveAgent("karencita", positions.homeConsole, "Revisando la casa", "homeConsole", {
-      type: "agent.activity.started",
+    submitEvent({
+      type: "agent.home.started",
+      agent: "karencita",
+      state: "acting",
+      activity: "Revisando la casa",
+      target: "homeConsole",
+      animation: "action",
       capability: "home",
-    }, "action");
+      source: "local-demo",
+      duration_ms: 5200,
+    });
   }
 
   if (type === "meeting") {
-    setStationOccupied("Mesa común");
-    moveAgent("katherine", positions.tableKatherine, "Conversando con Karen y Karencita", "Mesa común", { type: "agents.meeting" }, "social");
-    setTimeout(() => moveAgent("karen", positions.tableKaren, "Conversando con Katherine y Karencita", "Mesa común", { type: "agents.meeting" }, "social"), 120);
-    setTimeout(() => moveAgent("karencita", positions.tableKarencita, "Conversando con Katherine y Karen", "Mesa común", { type: "agents.meeting" }, "social"), 240);
+    const correlation = `meeting-${Date.now()}`;
+    [
+      ["katherine", "Conversando con Karen y Karencita"],
+      ["karen", "Conversando con Katherine y Karencita"],
+      ["karencita", "Conversando con Katherine y Karen"],
+    ].forEach(([agent, activity]) => {
+      submitEvent({
+        type: "agents.meeting",
+        agent,
+        state: "talking",
+        activity,
+        target: "table",
+        animation: "social",
+        source: "local-demo",
+        correlation_id: correlation,
+        duration_ms: 5600,
+      });
+    });
   }
 
   if (type === "sleep") {
-    setStationOccupied(null, false);
-    moveAgent("katherine", positions.idleKatherine, "Descansando", "Hogar", { type: "agent.rest" }, "sleep");
-    setTimeout(() => moveAgent("karen", positions.idleKaren, "Descansando", "Hogar", { type: "agent.rest" }, "sleep"), 120);
-    setTimeout(() => moveAgent("karencita", positions.idleKarencita, "Descansando", "Hogar", { type: "agent.rest" }, "sleep"), 240);
+    ["katherine", "karen", "karencita"].forEach(agent => {
+      submitEvent({
+        type: "agent.rest",
+        agent,
+        state: "resting",
+        activity: "Descansando",
+        target: "Hogar",
+        animation: "sleep",
+        source: "local-demo",
+        duration_ms: 6200,
+      });
+    });
   }
 
-  if (type === "sequence") runSequence();
+  if (type === "queue") {
+    [
+      ["Investigando alerta", "research", "researching", "work", 3200],
+      ["Revisando código", "research", "working", "work", 3200],
+      ["Esperando resultado", "research", "waiting", "waiting", 2600],
+    ].forEach(([activity, target, state, animation, duration_ms]) => {
+      submitEvent({
+        type: "agent.queue.demo",
+        agent: "karen",
+        state,
+        activity,
+        target,
+        animation,
+        source: "local-demo",
+        duration_ms,
+      });
+    });
+  }
+
+  if (type === "sequence") {
+    demo("katherine");
+    demo("karen");
+    demo("karencita");
+    setTimeout(() => demo("meeting"), 700);
+  }
 }
 
-async function runSequence() {
-  demo("katherine");
-  await wait(1350);
-  demo("karen");
-  await wait(1350);
-  demo("karencita");
-  await wait(1650);
-  demo("meeting");
-}
+function resetVisuals() {
+  Object.entries(visualPositions).forEach(([agent]) => {
+    const target = resolveTarget(agent, "Hogar");
+    const el = document.querySelector(`#agent-${agent}`);
+    visualPositions[agent] = { ...target };
+    el.style.left = `${target.left}%`;
+    el.style.top = `${target.top}%`;
+    el.style.zIndex = String(10 + Math.round(target.top));
+    el.dataset.state = "idle";
+    el.classList.remove("moving", "active", "face-left");
+    el.querySelector(".agent-bubble span").textContent = "Libre";
+    playAnimation(agent, "idle");
+  });
 
-function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  closeInspector();
+  refreshOccupancy(engine.snapshot());
 }
 
 function toggleLab() {
@@ -313,13 +465,116 @@ function toggleLab() {
   if (willOpen) panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
+function setValidation(message, ok = true) {
+  const node = document.querySelector("#event-validation");
+  node.textContent = message;
+  node.classList.remove("ok", "error");
+  node.classList.add(ok ? "ok" : "error");
+}
+
+function dispatchEditorEvent() {
+  const textarea = document.querySelector("#event-input");
+
+  try {
+    const raw = JSON.parse(textarea.value);
+    const result = submitEvent(raw);
+
+    if (result.accepted) {
+      setValidation(result.queued ? "Evento válido · en cola" : "Evento válido · enviado", true);
+    }
+  } catch (error) {
+    setValidation(`JSON inválido: ${error.message}`, false);
+  }
+}
+
+function loadExample() {
+  document.querySelector("#event-input").value = JSON.stringify({
+    type: "agent.research.started",
+    agent: "karen",
+    state: "researching",
+    activity: "Investigando desde contrato JSON",
+    target: "research",
+    animation: "work",
+    source: "local-demo",
+    tool: "research-bridge",
+    duration_ms: 5000,
+  }, null, 2);
+  setValidation("Ejemplo cargado", true);
+}
+
+function updateLocalClock() {
+  const now = new Date();
+  const clock = document.querySelector("#local-clock");
+  const world = document.querySelector("#world");
+
+  if (clock) {
+    clock.textContent = new Intl.DateTimeFormat("es-CL", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    }).format(now);
+  }
+
+  if (world) {
+    const hour = now.getHours();
+    world.dataset.daypart = hour >= 7 && hour < 20 ? "day" : "night";
+  }
+}
+
+engine.addEventListener("world:event", event => {
+  const payload = event.detail;
+  if (payload.agent) moveVisual(payload.agent, payload);
+  renderPayload({ status: "started", event: payload });
+});
+
+engine.addEventListener("world:complete", event => {
+  if (event.detail.agent) settleVisual(event.detail.agent);
+});
+
+engine.addEventListener("world:state", event => {
+  refreshOccupancy(event.detail);
+  if (selectedAgent) renderInspector(selectedAgent);
+});
+
+engine.addEventListener("world:queue", event => renderQueue(event.detail));
+
+engine.addEventListener("world:history", event => {
+  renderHistory(event.detail);
+});
+
+engine.addEventListener("world:invalid", event => {
+  setValidation(event.detail.errors.join(" · "), false);
+});
+
+engine.addEventListener("world:pause", event => {
+  const button = document.querySelector("#toggle-engine-pause");
+  button.textContent = event.detail.paused ? "Reanudar cola" : "Pausar cola";
+});
+
 document.querySelectorAll("[data-demo]").forEach(button => {
   button.addEventListener("click", () => demo(button.dataset.demo));
 });
 
 document.querySelector("#toggle-lab").addEventListener("click", toggleLab);
-document.querySelector("#reset-world").addEventListener("click", resetWorld);
+document.querySelector("#reset-world").addEventListener("click", () => {
+  engine.reset();
+  resetVisuals();
+  renderPayload({ source: "local-demo", status: "reset" });
+});
+
 document.querySelector("#close-inspector").addEventListener("click", closeInspector);
+document.querySelector("#dispatch-event").addEventListener("click", dispatchEditorEvent);
+document.querySelector("#load-event-example").addEventListener("click", loadExample);
+
+document.querySelector("#toggle-engine-pause").addEventListener("click", () => {
+  engine.setPaused(!engine.paused);
+});
+
+document.querySelector("#clear-history").addEventListener("click", () => {
+  engine.history = [];
+  renderHistory([]);
+  renderPayload({ source: "local-demo", status: "history-cleared" });
+});
 
 document.querySelectorAll(".agent").forEach(el => {
   const agent = el.dataset.agent;
@@ -343,20 +598,21 @@ document.querySelectorAll(".world-object").forEach(node => {
     }
 
     if ((station === "core" || station === "portal") && selectedAgent) {
-      const target = station === "core" ? positions.core : positions.portal;
-      const label = station === "core" ? "Core Netheris" : "Enlace al mundo físico";
-      moveAgent(
-        selectedAgent,
-        target,
-        station === "core" ? "Consultando el Core" : "Observando el enlace físico",
-        station,
-        { type: "world.object.interaction", station },
-        station === "core" ? "work" : "action"
-      );
+      submitEvent({
+        type: "world.object.interaction",
+        agent: selectedAgent,
+        state: station === "core" ? "working" : "acting",
+        activity: station === "core" ? "Consultando el Core" : "Observando el enlace físico",
+        target: station,
+        animation: station === "core" ? "work" : "action",
+        source: "local-demo",
+        duration_ms: 4200,
+        metadata: { object: station },
+      });
       return;
     }
 
-    renderEvent({
+    renderPayload({
       type: "world.object.selected",
       station,
       status: "informational",
@@ -365,25 +621,19 @@ document.querySelectorAll(".world-object").forEach(node => {
   });
 });
 
-function updateLocalClock() {
-  const clock = document.querySelector("#local-clock");
-  if (!clock) return;
-  clock.textContent = new Intl.DateTimeFormat("es-CL", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date());
-}
-
-updateLocalClock();
-setInterval(updateLocalClock, 30000);
-
 preloadFrames();
 
-Object.entries(initialState).forEach(([agent, data]) => {
+Object.keys(initialState).forEach(agent => {
+  const target = resolveTarget(agent, "Hogar");
   const el = document.querySelector(`#agent-${agent}`);
-  el.style.left = `${data.position.left}%`;
-  el.style.top = `${data.position.top}%`;
-  el.style.zIndex = String(10 + Math.round(data.position.top));
+  el.style.left = `${target.left}%`;
+  el.style.top = `${target.top}%`;
+  el.style.zIndex = String(10 + Math.round(target.top));
+  el.dataset.state = "idle";
   playAnimation(agent, "idle");
 });
+
+renderQueue(engine.snapshot().queues);
+renderHistory(engine.snapshot().history);
+updateLocalClock();
+setInterval(updateLocalClock, 30000);
