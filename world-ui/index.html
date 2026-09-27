@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#080b15" />
+  <meta name="theme-color" content="#09051b" />
   <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
   <title>Netheris World UI · El Hogar</title>
   <link rel="stylesheet" href="./styles.css" />
@@ -12,9 +12,9 @@
   <main class="app-shell">
     <header class="world-bar">
       <div class="brand">
-        <span class="brand-mark">◇</span>
+        <span class="brand-mark"><i></i></span>
         <div>
-          <p class="eyebrow">NETHERIS · WORLD UI</p>
+          <p class="eyebrow">NETHERIS · REALM INTERFACE</p>
           <h1>El Hogar</h1>
         </div>
       </div>
@@ -26,149 +26,189 @@
           <span class="separator">·</span>
           <span id="local-clock">--:--</span>
           <span class="separator">·</span>
-          <span>PET sprites</span>
+          <span>World State activo</span>
         </div>
-        <button id="toggle-lab" class="icon-button" type="button" aria-expanded="false" aria-controls="lab-panel" title="Abrir laboratorio de simulación">
-          <span>⚗</span>
-          <span class="button-label">Simulación</span>
+        <button id="toggle-lab" class="icon-button" type="button" aria-expanded="false" aria-controls="lab-panel">
+          <span>✦</span>
+          <span class="button-label">Oráculo</span>
         </button>
       </div>
     </header>
 
     <section class="world-shell">
       <div id="world" class="world" aria-label="El Hogar de Netheris">
-        <div class="sky-glow"></div>
-        <div class="back-wall"></div>
-        <div class="panorama">
-          <span class="star star-a"></span>
-          <span class="star star-b"></span>
-          <span class="star star-c"></span>
-          <div class="horizon-line"></div>
-          <div class="distant-node node-a"></div>
-          <div class="distant-node node-b"></div>
-          <div class="distant-node node-c"></div>
+        <div class="ether-sky"></div>
+        <div class="nebula nebula-a"></div>
+        <div class="nebula nebula-b"></div>
+        <div class="moon-sigil" aria-hidden="true"><span></span><i></i></div>
+
+        <div class="stars" aria-hidden="true">
+          <i style="--x:8%;--y:12%;--s:2px"></i>
+          <i style="--x:15%;--y:25%;--s:3px"></i>
+          <i style="--x:27%;--y:9%;--s:2px"></i>
+          <i style="--x:38%;--y:18%;--s:2px"></i>
+          <i style="--x:52%;--y:8%;--s:3px"></i>
+          <i style="--x:62%;--y:21%;--s:2px"></i>
+          <i style="--x:73%;--y:12%;--s:2px"></i>
+          <i style="--x:87%;--y:24%;--s:3px"></i>
+          <i style="--x:92%;--y:9%;--s:2px"></i>
+          <i style="--x:44%;--y:31%;--s:2px"></i>
+          <i style="--x:81%;--y:35%;--s:2px"></i>
+          <i style="--x:21%;--y:38%;--s:2px"></i>
         </div>
 
-        <div class="room-floor">
-          <div class="floor-grid"></div>
-          <div class="floor-ring floor-ring-a"></div>
-          <div class="floor-ring floor-ring-b"></div>
+        <div class="distant-realm" aria-hidden="true">
+          <span class="floating-island island-a"></span>
+          <span class="floating-island island-b"></span>
+          <span class="floating-island island-c"></span>
+          <span class="sky-tower tower-a"></span>
+          <span class="sky-tower tower-b"></span>
+          <span class="sky-bridge"></span>
+        </div>
+
+        <div class="realm-floor">
+          <div class="floor-plane"></div>
+          <div class="rune-road road-left"></div>
+          <div class="rune-road road-right"></div>
+          <div class="rune-road road-center"></div>
+          <div class="arcane-circle circle-outer"></div>
+          <div class="arcane-circle circle-mid"></div>
+          <div class="arcane-circle circle-inner"></div>
+          <div class="arcane-glyph glyph-a">ᚱ</div>
+          <div class="arcane-glyph glyph-b">ᚨ</div>
+          <div class="arcane-glyph glyph-c">ᚾ</div>
+          <div class="arcane-glyph glyph-d">ᛏ</div>
           <div id="route-trail" class="route-trail"></div>
         </div>
 
-        <div class="zone-light zone-katherine"></div>
-        <div class="zone-light zone-karen"></div>
-        <div class="zone-light zone-karencita"></div>
-        <div class="zone-light zone-lounge"></div>
-
-        <div class="decor planter planter-left"><span></span><i></i><b></b></div>
-        <div class="decor planter planter-right"><span></span><i></i><b></b></div>
-
-        <div class="lounge-rug"></div>
-        <div class="lounge-sofa" aria-hidden="true">
-          <span class="sofa-back"></span>
-          <span class="sofa-seat seat-a"></span>
-          <span class="sofa-seat seat-b"></span>
-          <span class="sofa-arm arm-a"></span>
-          <span class="sofa-arm arm-b"></span>
+        <div class="digital-tree tree-left" aria-hidden="true">
+          <span class="tree-trunk"></span>
+          <i class="leaf l1"></i><i class="leaf l2"></i><i class="leaf l3"></i><i class="leaf l4"></i>
+          <b class="tree-rune">✧</b>
         </div>
-        <div class="ambient-lamp lamp-left" aria-hidden="true"><span></span></div>
-        <div class="ambient-lamp lamp-right" aria-hidden="true"><span></span></div>
 
-        <button class="world-object station station-board" data-station="board" type="button">
-          <span class="object-glow"></span>
-          <span class="holo-screen">
+        <div class="digital-tree tree-right" aria-hidden="true">
+          <span class="tree-trunk"></span>
+          <i class="leaf l1"></i><i class="leaf l2"></i><i class="leaf l3"></i><i class="leaf l4"></i>
+          <b class="tree-rune">✦</b>
+        </div>
+
+        <div class="crystal-field crystal-left" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </div>
+        <div class="crystal-field crystal-right" aria-hidden="true">
+          <i></i><i></i><i></i>
+        </div>
+
+        <button class="world-object archive-shrine" data-station="board" type="button">
+          <span class="shrine-platform"></span>
+          <span class="floating-book">
+            <i class="book-page page-a"></i>
+            <i class="book-page page-b"></i>
+            <b class="book-rune">✧</b>
+          </span>
+          <span class="orbit-rune orbit-a"></span>
+          <span class="orbit-rune orbit-b"></span>
+          <span class="object-copy">
+            <strong>Archivo de Katherine</strong>
+            <small>Memoria · coordinación · conocimiento</small>
+          </span>
+        </button>
+
+        <button class="world-object forge-shrine" data-station="research" type="button">
+          <span class="shrine-platform"></span>
+          <span class="forge-crystal">
             <i></i><i></i><i></i>
           </span>
+          <span class="forge-glyph glyph-one">⌘</span>
+          <span class="forge-glyph glyph-two">{ }</span>
           <span class="object-copy">
-            <strong>Tablero de Katherine</strong>
-            <small>Memoria · coordinación</small>
+            <strong>Forja de Karen</strong>
+            <small>Investigación · código · análisis</small>
           </span>
         </button>
 
-        <button class="world-object station station-research" data-station="research" type="button">
-          <span class="object-glow"></span>
-          <span class="desk">
-            <i class="monitor monitor-a"></i>
-            <i class="monitor monitor-b"></i>
-            <i class="desk-base"></i>
+        <button class="world-object sanctuary-shrine" data-station="homeConsole" type="button">
+          <span class="shrine-platform"></span>
+          <span class="sanctuary-orb">
+            <i class="orb-core">⌂</i>
+            <i class="orb-ring"></i>
           </span>
+          <span class="home-sigils"><i></i><i></i><i></i></span>
           <span class="object-copy">
-            <strong>Estación de Karen</strong>
-            <small>Research · código</small>
+            <strong>Santuario de Karencita</strong>
+            <small>Casa · rutinas · dispositivos</small>
           </span>
         </button>
 
-        <button class="world-object station station-home" data-station="homeConsole" type="button">
-          <span class="object-glow"></span>
-          <span class="home-console">
-            <i class="home-screen"></i>
-            <i class="home-core">⌂</i>
-          </span>
+        <button class="world-object world-gate" data-station="portal" type="button">
+          <span class="gate-pillar pillar-left"></span>
+          <span class="gate-pillar pillar-right"></span>
+          <span class="gate-ring ring-a"></span>
+          <span class="gate-ring ring-b"></span>
+          <span class="gate-core">◉</span>
           <span class="object-copy">
-            <strong>Consola de Karencita</strong>
-            <small>Casa · rutinas · IoT</small>
-          </span>
-        </button>
-
-        <button class="world-object portal station-portal" data-station="portal" type="button">
-          <span class="portal-ring ring-1"></span>
-          <span class="portal-ring ring-2"></span>
-          <span class="portal-core">◎</span>
-          <span class="object-copy">
-            <strong>Mundo físico</strong>
-            <small>Manifestaciones</small>
+            <strong>Puerta al Mundo Físico</strong>
+            <small>PC · móvil · voz · dispositivos</small>
           </span>
         </button>
 
-        <button class="world-object core-gate station-core" data-station="core" type="button">
-          <span class="core-crystal">◇</span>
-          <span class="core-base"></span>
+        <button class="world-object core-spire" data-station="core" type="button">
+          <span class="spire-base"></span>
+          <span class="spire-crystal">◇</span>
+          <span class="spire-ring ring-one"></span>
+          <span class="spire-ring ring-two"></span>
           <span class="object-copy">
-            <strong>Core Netheris</strong>
-            <small>Puente lógico</small>
+            <strong>Núcleo de Netheris</strong>
+            <small>Puente lógico del reino</small>
           </span>
         </button>
 
-        <button class="world-object common-table station-table" data-station="table" type="button">
-          <span class="table-top"></span>
-          <span class="table-energy"></span>
+        <button class="world-object council-circle" data-station="table" type="button">
+          <span class="council-disc"></span>
+          <span class="council-rune">✦</span>
+          <span class="council-sigil sigil-a"></span>
+          <span class="council-sigil sigil-b"></span>
+          <span class="council-sigil sigil-c"></span>
           <span class="object-copy">
-            <strong>Mesa común</strong>
-            <small>Punto de encuentro</small>
+            <strong>Círculo del Consejo</strong>
+            <small>Encuentro entre las tres</small>
           </span>
         </button>
 
         <article id="agent-katherine" class="agent katherine" data-agent="katherine" tabindex="0" aria-label="Katherine">
           <div class="agent-bubble"><span>Libre</span></div>
+          <div class="agent-aura"></div>
           <div class="avatar">
             <img class="pet-sprite" src="./assets/pets/katherine/frame_001.png" alt="Katherine">
             <span class="avatar-fallback">K</span>
           </div>
-          <div class="agent-name"><strong>Katherine</strong><span>Coordinación</span></div>
+          <div class="agent-name"><strong>Katherine</strong><span>Custodia del conocimiento</span></div>
         </article>
 
         <article id="agent-karen" class="agent karen" data-agent="karen" tabindex="0" aria-label="Karen">
           <div class="agent-bubble"><span>Libre</span></div>
+          <div class="agent-aura"></div>
           <div class="avatar">
             <img class="pet-sprite" src="./assets/pets/karen/frame_001.png" alt="Karen">
             <span class="avatar-fallback">Ka</span>
           </div>
-          <div class="agent-name"><strong>Karen</strong><span>Research & código</span></div>
+          <div class="agent-name"><strong>Karen</strong><span>Forjadora del código</span></div>
         </article>
 
         <article id="agent-karencita" class="agent karencita" data-agent="karencita" tabindex="0" aria-label="Karencita">
           <div class="agent-bubble"><span>Libre</span></div>
+          <div class="agent-aura"></div>
           <div class="avatar">
             <img class="pet-sprite" src="./assets/pets/karencita/frame_001.png" alt="Karencita">
             <span class="avatar-fallback">Ki</span>
           </div>
-          <div class="agent-name"><strong>Karencita</strong><span>Casa & rutinas</span></div>
+          <div class="agent-name"><strong>Karencita</strong><span>Guardiana del Hogar</span></div>
         </article>
 
         <aside id="agent-inspector" class="agent-inspector" hidden>
           <button id="close-inspector" class="close-button" type="button" aria-label="Cerrar">×</button>
-          <p class="eyebrow">PRESENCIA</p>
+          <p class="eyebrow">PRESENCIA DEL REINO</p>
           <div class="inspector-head">
             <span id="inspector-dot" class="inspector-dot"></span>
             <div>
@@ -178,14 +218,14 @@
           </div>
           <dl>
             <div><dt>Actividad</dt><dd id="inspector-activity">Libre</dd></div>
-            <div><dt>Ubicación</dt><dd id="inspector-target">Hogar</dd></div>
+            <div><dt>Ubicación</dt><dd id="inspector-target">El Hogar</dd></div>
             <div><dt>Origen</dt><dd id="inspector-source">local-demo</dd></div>
           </dl>
         </aside>
 
-        <div class="world-legend">
-          <span><i class="legend-dot"></i> Fase 2 Alpha</span>
-          <span>El trabajo aún se simula · haz clic en estaciones y personajes.</span>
+        <div class="realm-caption">
+          <span><i class="legend-dot"></i> Fase 2 Alpha · Arcane Realm</span>
+          <span>La magia visual representa lógica digital; la actividad laboral sigue siendo simulada.</span>
         </div>
       </div>
     </section>
@@ -193,14 +233,14 @@
     <section id="lab-panel" class="lab-panel" hidden>
       <div class="lab-header">
         <div>
-          <p class="eyebrow">LABORATORIO LOCAL</p>
-          <h2>Eventos de prueba</h2>
+          <p class="eyebrow">ORÁCULO DE PRUEBAS</p>
+          <h2>World State Engine</h2>
         </div>
-        <button id="reset-world" class="ghost" type="button">Volver al Hogar</button>
+        <button id="reset-world" class="ghost" type="button">Restablecer reino</button>
       </div>
 
       <div class="engine-status">
-        <span><i class="engine-dot"></i> World State Engine</span>
+        <span><i class="engine-dot"></i> Motor del mundo activo</span>
         <span id="engine-queue">Cola: 0</span>
         <button id="toggle-engine-pause" class="mini-button" type="button">Pausar cola</button>
       </div>
@@ -208,10 +248,10 @@
       <div class="lab-grid">
         <div class="lab-column">
           <div class="sim-buttons">
-            <button data-demo="katherine">Katherine · tablero</button>
+            <button data-demo="katherine">Katherine · archivo</button>
             <button data-demo="karen">Karen · investigar</button>
-            <button data-demo="karencita">Karencita · casa</button>
-            <button data-demo="meeting">Reunión</button>
+            <button data-demo="karencita">Karencita · santuario</button>
+            <button data-demo="meeting">Consejo</button>
             <button data-demo="sleep">Descansar</button>
             <button data-demo="queue" class="primary">Probar cola Karen</button>
             <button data-demo="sequence" class="primary wide">Secuencia completa</button>
@@ -220,8 +260,8 @@
           <div class="event-injector">
             <div class="section-title">
               <div>
-                <p class="eyebrow">CONTRATO JSON</p>
-                <h3>Inyectar evento</h3>
+                <p class="eyebrow">CONTRATO DEL REINO</p>
+                <h3>Inyectar evento JSON</h3>
               </div>
               <button id="load-event-example" class="mini-button" type="button">Ejemplo Karen</button>
             </div>
@@ -236,7 +276,7 @@
   "duration_ms": 5000
 }</textarea>
             <div class="injector-actions">
-              <button id="dispatch-event" class="primary-action" type="button">Enviar al mundo</button>
+              <button id="dispatch-event" class="primary-action" type="button">Enviar al reino</button>
               <span id="event-validation" class="validation-message">Contrato listo</span>
             </div>
           </div>
@@ -256,7 +296,7 @@
 
           <div class="section-title history-title">
             <div>
-              <p class="eyebrow">MEMORIA EFÍMERA</p>
+              <p class="eyebrow">CRÓNICA EFÍMERA</p>
               <h3>Historial local</h3>
             </div>
             <button id="clear-history" class="mini-button" type="button">Limpiar</button>
