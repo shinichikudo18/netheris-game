@@ -219,6 +219,15 @@ h2 { font-size: 18px; }
   font-weight: 800;
 }
 
+.avatar-fallback[hidden],
+.has-pet-assets .avatar-fallback {
+  display: none !important;
+}
+
+.has-pet-assets .pet-sprite {
+  display: block;
+}
+
 .katherine .avatar { outline: 2px solid rgba(141,107,255,.45); }
 .karen .avatar { outline: 2px solid rgba(255,117,186,.45); }
 .karencita .avatar { outline: 2px solid rgba(80,215,255,.45); }
