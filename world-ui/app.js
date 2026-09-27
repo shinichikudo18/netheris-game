@@ -2,20 +2,31 @@ const positions = {
   idleKatherine: { left: 34, top: 61 },
   idleKaren: { left: 50, top: 64 },
   idleKarencita: { left: 66, top: 61 },
-  board: { left: 18, top: 43 },
+  board: { left: 18, top: 44 },
   research: { left: 82, top: 44 },
-  homeConsole: { left: 82, top: 76 },
-  portal: { left: 17, top: 75 },
-  core: { left: 50, top: 43 },
-  tableKatherine: { left: 43, top: 76 },
-  tableKaren: { left: 50, top: 72 },
-  tableKarencita: { left: 57, top: 76 },
+  homeConsole: { left: 82, top: 75 },
+  portal: { left: 17, top: 74 },
+  core: { left: 50, top: 42 },
+  tableKatherine: { left: 43, top: 75 },
+  tableKaren: { left: 50, top: 71 },
+  tableKarencita: { left: 57, top: 75 },
 };
 
 const roles = {
-  katherine: "Coordinación",
-  karen: "Research & código",
-  karencita: "Casa & rutinas",
+  katherine: "Coordinación · memoria · conocimiento",
+  karen: "Investigación · código · análisis",
+  karencita: "Hogar · rutinas · dispositivos",
+};
+
+const targetLabels = {
+  Hogar: "Plaza del Hogar",
+  board: "Archivo de Katherine",
+  research: "Forja de Karen",
+  homeConsole: "Santuario de Karencita",
+  portal: "Puerta al Mundo Físico",
+  core: "Núcleo de Netheris",
+  table: "Círculo del Consejo",
+  "Mesa común": "Círculo del Consejo",
 };
 
 const stationSelectors = {
@@ -260,7 +271,7 @@ function renderInspector(agent) {
   document.querySelector("#inspector-name").textContent = item.name;
   document.querySelector("#inspector-role").textContent = roles[agent];
   document.querySelector("#inspector-activity").textContent = item.activity;
-  document.querySelector("#inspector-target").textContent = item.target;
+  document.querySelector("#inspector-target").textContent = targetLabels[item.target] || item.target;
   document.querySelector("#inspector-source").textContent = item.source;
   inspector.hidden = false;
 }
@@ -301,7 +312,7 @@ function renderHistory(history) {
           <span class="history-phase">${escapeHtml(item.phase || "event")}</span>
           <time>${escapeHtml(time)}</time>
         </header>
-        <p>${escapeHtml(item.activity || item.type)} · ${escapeHtml(item.target || "-")}</p>
+        <p>${escapeHtml(item.activity || item.type)} · ${escapeHtml(targetLabels[item.target] || item.target || "-")}</p>
       </article>
     `;
   }).join("");
